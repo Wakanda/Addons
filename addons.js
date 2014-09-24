@@ -625,8 +625,6 @@ function bindInstallButtons(rootNode) {
 
 		refreshButtonStyle(this);
 		
-		launchSearch();
-
 		studio.extension.storage.setItem('ERROR', '');
 
 	});
@@ -651,8 +649,6 @@ function bindInstallButtons(rootNode) {
 
 		refreshButtonStyle(this);
 		
-		launchSearch();
-
 		studio.extension.storage.setItem('ERROR', '');
 
 	});
