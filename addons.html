@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>Wakanda Studion Add-ons</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="google" content="notranslate">
+    <meta http-equiv="Content-Language" content="en" />
+    <link href="addons.css" rel="stylesheet" media="print, screen">
+    <style>
+        .close {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+        }
+    </style>
+</head>
+
+<body class="studio-ext-addons">
+<div id="container">  <div id="header">
+    <header>
+        <h1>Wakanda Studio Add-ons</h1>        <!--
+        <a href="javascript:studio.extension.quitDialog();" title="Close" class="close">
+            <img src="./img/formClear.gif" /></a>        -->
+        <nav>
+            <ul class="wakRepo">						    <li id="wakanda-widgets">				                    <img src="./img/widgets.png" />                    <a href="#">Widgets</a>                </li>				
+                <li id="wakanda-themes">				
+                    <img src="./img/themes.png" />
+                    <a href="#">Themes</a>
+                </li>
+                <li id="wakanda-extensions">				                    <img src="./img/extensions.png" />
+                    <a href="#">Extensions</a>
+                </li>				                <li id="wakanda-modules">				     <img src="./img/modules.png" />				     <a href="#">Modules</a>				</li>
+               
+              
+                <!--   				<li id="wakandadb-drivers"><a href="#">Drivers</a></li>  				-->
+                
+               
+            </ul>
+        </nav>
+    </header>  </div>
+<div id="body">
+    <main>	    <div class="projectselect" id="selecting" >            <label for="projectsList">Install in:  </label>            <select  id="projectsList" ></select>        </div>				<h5 id='ps' style="visibility: hidden; ">Note : You must restart Wakanda Studio / Wakanda Enterprise Studio after installing an extension. </h5>		        <div class="addRepo">					        <button onclick='return addCustomRepo();' ></button>&nbsp;							    <p id='addRepo'>Import a widget</p>					    </div>						
+        <form class="search-form">			
+            <span class="as-searchInput">			
+                <img src="./img/browseField.gif" class="magnifyingGlass" />
+                <input id="searchField" type="text" placeholder="Search" />
+                <button class="clear" onclick="clearSearch();" style="visibility: hidden; "></button>
+            </span>
+        </form>	    <span id='items-found-number' class='items-found'></span>		
+        <ul id="contentList">
+        </ul>
+    </main>
+ </div> <div id="footer">
+    <footer>
+        <ul class="pagination">
+        </ul>
+    </footer></div>
+</div>
+    <script src="lib/jquery-2.0.3.min.js"></script>
+
+    <script src="addons.js"></script>
+</body>
+
+</html>
