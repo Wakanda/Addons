@@ -204,12 +204,12 @@ function unzip(file, addonID, addonName) {
 	var worker,
 	command,
 	fileLocation = file.substr(0, file.lastIndexOf('/'));
+	if (addonName != 'Addons')
+		if (addonName && Folder(fileLocation + '/' + addonName).exists) {
 
-	if (addonName && Folder(fileLocation + '/' + addonName).exists) {
+			Folder(fileLocation + '/' + addonName).remove();
 
-		Folder(fileLocation + '/' + addonName).remove();
-
-	}
+		}
 
 	if (os.isWindows) {
 
@@ -350,21 +350,26 @@ function loadExternalWidget(motherWidget, httpUrls) {
 				params.name = httpUrls[i].substring(httpUrls[i].lastIndexOf('/') + 1, httpUrls[i].length);
 
 			}
-			//params.name = httpUrls[i].substring(httpUrls[i].lastIndexOf('/') + 1, httpUrls[i].length);
-			params.git_url = httpUrls[i].replace('github.com', 'api.github.com/repos');
-			params.git_url = params.git_url.replace(/.git$/g, '');
-			params.name = params.git_url.substring(params.git_url.lastIndexOf('/') + 1, params.git_url.length);
-			params.zip_url = httpUrls[i].replace('.git', '') + '/archive/' + brancheName + '.zip';
-			params.type = 'wakanda-widgets';
-			params.brancheName = brancheName;
-			studio.extension.storage.setItem('addonParams', escape(JSON.stringify(params)));
+			if (!studio.extension.storage.getItem('externals').match(params.name)) {
+				params.git_url = httpUrls[i].replace('github.com', 'api.github.com/repos');
+				params.git_url = params.git_url.replace(/.git$/g, '');
+				params.name = params.git_url.substring(params.git_url.lastIndexOf('/') + 1, params.git_url.length);
+				params.zip_url = httpUrls[i].replace('.git', '') + '/archive/' + brancheName + '.zip';
+				params.type = 'wakanda-widgets';
+				params.brancheName = brancheName;
 
-			if (studio.confirm("The " + motherWidget + " uses another widget called " + params.name + ". Would you like to install the " + params.name + " widget")) {
+				studio.extension.storage.setItem('addonParams', escape(JSON.stringify(params)));
+
+				// if (studio.confirm("The " + motherWidget + " uses another widget called " + params.name + ". Would you like to install the " + params.name + " widget ?")) {
+
+				studio.extension.storage.setItem('externals', studio.extension.storage.getItem('externals') + ',' + params.name);
+
 				if (Folder(getAddonsRootFolder(params.type).path + params.name).exists) {
 					studio.sendCommand('Addons.backup');
 				}
 				returnvalue = returnvalue && studio.sendCommand('Addons.downloadExt');
 
+				// }
 			}
 
 		} else {
@@ -389,46 +394,55 @@ function loadExternalWidget(motherWidget, httpUrls) {
 
 				dataObj.name = item.name;
 
-				dataObj.type = item.type;
+				if (!studio.extension.storage.getItem('externals').match(dataObj.name)) {
 
-				dataObj.hash = item.sha;
+					dataObj.type = item.type;
 
-				dataObj.html_url = item.html_url;
+					dataObj.hash = item.sha;
 
-				dataObj.git_url = item.git_url;
+					// dataObj.html_url = item.html_url;
 
-				dataObj.owner = item.owner;
+					// dataObj.git_url = item.git_url;
 
-				dataObj.description = item.description;
+					// dataObj.owner = item.owner;
 
-				dataObj.created_at = item.created_at;
+					// dataObj.description = item.description;
 
-				dataObj.updated_at = item.updated_at;
+					// dataObj.created_at = item.created_at;
 
-				dataObj.pushed_at = item.pushed_at;
+					// dataObj.updated_at = item.updated_at;
 
-				dataObj.downloads = item.downloads;
+					// dataObj.pushed_at = item.pushed_at;
 
-				dataObj.githubID = getID(item.git_url);
+					// dataObj.downloads = item.downloads;
 
-				dataObj.license = item.license;
+					// dataObj.githubID = getID(item.git_url);
 
-				dataObj.licenseAddress = item.licenseAddress;
+					// dataObj.license = item.license;
 
-				studio.extension.storage.setItem('addonParams', escape(JSON.stringify(dataObj)));
+					// dataObj.licenseAddress = item.licenseAddress;
 
-				if (studio.confirm("The " + motherWidget + " uses another widget called " + dataObj.name + ". Would you like to install the " + dataObj.name + " widget")) {
+					studio.extension.storage.setItem('addonParams', escape(JSON.stringify(dataObj)));
 
 					studio.sendCommand('Addons.check');
 
-					if (studio.extension.storage.getItem(dataObj.name) == 'Upgrade')
+					if ((studio.extension.storage.getItem(dataObj.name) == 'Upgrade') && (studio.confirm("the Widget " + dataObj.name + " already exists in your Project, do you want to override it ?"))) {
+
+						studio.extension.storage.setItem('externals', studio.extension.storage.getItem('externals') + ',' + dataObj.name);
+
 						studio.sendCommand('Addons.backup');
 
-					if (studio.extension.storage.getItem(dataObj.name) != 'Installed')
 						returnvalue = returnvalue && studio.sendCommand('Addons.downloadExt');
 
-				}
+					}
+					if (studio.extension.storage.getItem(dataObj.name) == 'Install') {
 
+						studio.extension.storage.setItem('externals', studio.extension.storage.getItem('externals') + ',' + dataObj.name);
+
+						returnvalue = returnvalue && studio.sendCommand('Addons.downloadExt');
+					}
+
+				}
 			} else {
 
 				studio.alert('The widget ' + httpUrls[i] + ' does not exist in the wakanda-packages/ repository');
@@ -671,7 +685,8 @@ actions.backup = function backup() {
 
 	copyFolder(rootAddonsFolder.path + pluginName, rootAddonsFolder.path + '_previously-installed-' + pluginType + '/' + pluginName + '-' + (new Date()).getTime() + '/');
 
-	Folder(rootAddonsFolder.path + pluginName).remove();
+	if (pluginName != 'Addons')
+		Folder(rootAddonsFolder.path + pluginName).remove();
 
 };
 

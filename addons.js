@@ -159,7 +159,7 @@ $(function () {
 
 	var repoName = studio.extension.storage.getItem('defaultTab');
 
-	if (!studio.currentSolution.getSolutionFile() || !doesSolutionHaveProjects() ) {
+	if (!studio.currentSolution.getSolutionFile() || !doesSolutionHaveProjects()) {
 
 		removeSolutionTabs();
 
@@ -181,13 +181,12 @@ $(function () {
 
 });
 
+function doesSolutionHaveProjects() {
 
-function doesSolutionHaveProjects(){
+	var solutionFilePath = studio.currentSolution.getSolutionFile().path;
+	var xmltext = studio.loadText(solutionFilePath);
+	return xmltext.match(/\<project/);
 
-   var solutionFilePath = studio.currentSolution.getSolutionFile().path;
-   var xmltext = studio.loadText(solutionFilePath);
-   return xmltext.match(/\<project/);
-   
 }
 
 /**
@@ -202,8 +201,8 @@ function doesSolutionHaveProjects(){
 
 function launchSearch() {
 
-    window.scrollTo(0, 0);
-	
+	window.scrollTo(0, 0);
+
 	var searchString = $('#searchField').val().trim();
 
 	if (searchString.trim().length <= 0) {
@@ -231,9 +230,9 @@ function addCustomRepo() {
 	var typename = (parentListID.replace('wakanda-', '')).slice(0, -1);
 
 	var repoURL = studio.prompt('Enter the URL of the ' + typename + ' repository to import:', '');
-	
-	var brancheName ;
-	
+
+	var brancheName;
+
 	repoURL = repoURL.trim();
 
 	if (repoURL == '' || repoURL == null || repoURL.length <= 0) {
@@ -244,16 +243,16 @@ function addCustomRepo() {
 	var params = {};
 
 	repoURL = repoURL.replace(/\/$/, '');
-	
+
 	if (repoURL.match(/\/tree\//)) {
-	    
-		brancheName = repoURL.substring(repoURL.lastIndexOf('/tree/')+6,repoURL.length);
-		
-		repoURL = repoURL.substring(0,repoURL.lastIndexOf('/tree/'));
-		
+
+		brancheName = repoURL.substring(repoURL.lastIndexOf('/tree/') + 6, repoURL.length);
+
+		repoURL = repoURL.substring(0, repoURL.lastIndexOf('/tree/'));
+
 	} else {
-	
-	    brancheName = 'master';
+
+		brancheName = 'master';
 	}
 
 	if (repoURL.match(/\.git/g)) {
@@ -273,23 +272,22 @@ function addCustomRepo() {
 		return false;
 
 	}
-    
- 
 
-	
 	params.name = params.githubID;
 
 	params.git_url = repoURL.replace('github.com', 'api.github.com/repos');
 
 	params.git_url = params.git_url.replace(/.git$/g, '');
 
-	params.zip_url = repoURL.replace(/.git$/g, '') + '/archive/'+brancheName+'.zip';
-	
+	params.zip_url = repoURL.replace(/.git$/g, '') + '/archive/' + brancheName + '.zip';
+
 	params.type = parentListID;
-    
-	params.brancheName=brancheName;
-	
+
+	params.brancheName = brancheName;
+
 	studio.extension.storage.setItem('addonParams', escape(JSON.stringify(params)));
+
+	studio.extension.storage.setItem('externals', params.name);
 
 	studio.sendCommand('Addons.downloadExt');
 
@@ -313,8 +311,8 @@ function addCustomRepo() {
 
 function clearSearch() {
 
-    window.scrollTo(0,0);
-	
+	window.scrollTo(0, 0);
+
 	event.preventDefault();
 
 	event.stopPropagation();
@@ -388,23 +386,23 @@ function setProjectsList() {
 	var projectFile,
 	i,
 	option;
-	
-    projectFile = studio.File(solutionPath + projects[0].getAttribute("path"));
-	
-    $("#projectsList").append('<option value="' + projectFile.parent.path + '">' + projectFile.nameNoExt + '</option>');
-	
-	studio.extension.storage.setItem('projectpath',projectFile.parent.path);
-	
+
+	projectFile = studio.File(solutionPath + projects[0].getAttribute("path"));
+
+	$("#projectsList").append('<option value="' + projectFile.parent.path + '">' + projectFile.nameNoExt + '</option>');
+
+	studio.extension.storage.setItem('projectpath', projectFile.parent.path);
+
 	for (i = 1; i < projects.length; i++) {
 
 		projectFile = studio.File(solutionPath + projects[i].getAttribute("path"));
-		
+
 		$("#projectsList").append('<option value="' + projectFile.parent.path + '">' + projectFile.nameNoExt + '</option>');
 
 	}
-    $("#projectsList").append('<option value="line" disabled>&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</option>');
+	$("#projectsList").append('<option value="line" disabled>&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</option>');
 	$("#projectsList").append('<option value="Favorites">Favorites</option>');
-	
+
 	$('#projectsList').val(studio.extension.storage.getItem('projectpath'));
 
 }
@@ -619,12 +617,14 @@ function bindInstallButtons(rootNode) {
 
 		studio.extension.storage.setItem('addonParams', $(this).data('key'));
 
+		studio.extension.storage.setItem('externals', getAddonParam('name'));
+
 		studio.sendCommand('Addons.downloadExt');
 
 		studio.sendCommand('Addons.check');
 
 		refreshButtonStyle(this);
-		
+
 		studio.extension.storage.setItem('ERROR', '');
 
 	});
@@ -641,6 +641,8 @@ function bindInstallButtons(rootNode) {
 
 		studio.extension.storage.setItem('addonParams', $(this).data('key'));
 
+		studio.extension.storage.setItem('externals', getAddonParam('name'));
+
 		studio.sendCommand('Addons.backup');
 
 		studio.sendCommand('Addons.downloadExt');
@@ -648,8 +650,10 @@ function bindInstallButtons(rootNode) {
 		studio.sendCommand('Addons.check');
 
 		refreshButtonStyle(this);
-		
+
 		studio.extension.storage.setItem('ERROR', '');
+		
+		// studio.sendCommand('Addons.checkForUpdate');
 
 	});
 
@@ -1096,14 +1100,14 @@ function updateHeaderContent(repoName) {
 		$('#selecting').addClass('projectselect');
 
 		$('#addRepo').text('Import a ' + addonsType);
-		if((addonsType != 'theme')&&(addonsType != 'widget')){
-		$("#projectsList option[value='Favorites']").remove();
-		$("#projectsList option[value='line']").remove();
+		if ((addonsType != 'theme') && (addonsType != 'widget')) {
+			$("#projectsList option[value='Favorites']").remove();
+			$("#projectsList option[value='line']").remove();
 		}
 		if (addonsType != 'module') {
-		    if($("#projectsList option[value='Favorites']").length == 0){
-			$("#projectsList").append('<option value="line" disabled>&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</option>');
-			$("#projectsList").append('<option value="Favorites">Favorites</option>');
+			if ($("#projectsList option[value='Favorites']").length == 0) {
+				$("#projectsList").append('<option value="line" disabled>&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</option>');
+				$("#projectsList").append('<option value="Favorites">Favorites</option>');
 			}
 		}
 
@@ -1135,11 +1139,11 @@ function addHoverEvent() {
 
 	// $('#contentList li').hover(function () {
 
-		// $(this).css("background-color", "#fdfdfd");
+	// $(this).css("background-color", "#fdfdfd");
 
 	// }, function () {
 
-		// $(this).css("background-color", "#f2f2f2");
+	// $(this).css("background-color", "#f2f2f2");
 
 	// });
 
@@ -1153,5 +1157,13 @@ function addHoverEvent() {
 	}, function () {
 		$('.tooltip').remove();
 	});
+
+}
+
+function getAddonParam(paramName) {
+
+	var addonParams = JSON.parse(unescape(studio.extension.storage.getItem('addonParams')));
+
+	return addonParams[paramName];
 
 }
