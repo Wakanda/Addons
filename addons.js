@@ -1,61 +1,34 @@
 /* Copyright (c) 4D, 2014
-
  *
-
  * Permission is hereby granted, free of charge, to any person obtaining a copy
-
  * of this software and associated documentation files (the "Software"), to deal
-
  * in the Software without restriction, including without limitation the rights
-
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-
  * copies of the Software, and to permit persons to whom the Software is
-
  * furnished to do so, subject to the following conditions:
-
  *
-
  * The above copyright notice and this permission notice shall be included in
-
  * all copies or substantial portions of the Software.
-
  *
-
  * The Software shall be used for Good, not Evil.
-
  *
-
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-
  * THE SOFTWARE.
-
  */
 
 /**
-
  *
-
  * @namespace Dialog
-
  */
-
+ 
 /**
-
  * Base URL for the add-ons content server.
-
  * @type {string}
-
  */
 
 var WAM_BASE = 'http://addons.wakanda.org/rest/Addons/';
@@ -95,10 +68,9 @@ studio.extension.storage.setItem('ERROR', '');
 $(function () {
 
 	/**
-
 	 * Event : update tab (header and content ) when clicking
-
 	 **/
+
 	$('.wakRepo li').on('click', function (event) {
 
 		var repoName = this.id;
@@ -120,9 +92,7 @@ $(function () {
 	});
 
 	/**
-
 	 * Event : update tab content when changing project
-
 	 **/
 
 	$('#projectsList').on('change', function (e) {
@@ -138,9 +108,7 @@ $(function () {
 	});
 
 	/**
-
 	 * Event : update tab content when searching something  (live search)
-
 	 **/
 
 	$('#searchField').on('keyup', function (event) {
@@ -348,15 +316,10 @@ return 'https://github.com/' + result + '.zip';
  */
 
 /**
-
  * Extracts the github ID from the URL of a repository.
-
  * @memberof Dialog
-
  * @param githubURL
-
  * @returns {string} The github ID of the repository
-
  */
 
 function getID(githubURL) {
@@ -366,9 +329,7 @@ function getID(githubURL) {
 }
 
 /**
-
  * @memberof Dialog
-
  */
 
 function setProjectsList() {
@@ -408,15 +369,10 @@ function setProjectsList() {
 }
 
 /**
-
  * Returns the CSS class matching the status of an add-on.
-
  * @memberof Dialog
-
  * @param addonStatus {string} Possible values are 'Install', 'Installed', 'Upgrade', 'Restart'. Default value is 'Install'.
-
  * @returns {string} CSS class
-
  */
 
 function getCSSPropertiesFromStatus(addonStatus) {
@@ -456,15 +412,10 @@ function getCSSPropertiesFromStatus(addonStatus) {
 }
 
 /**
-
  * Returns the value of the CSS class to be used for the specified add-on.
-
  * @memberof Dialog
-
  * @param addon {object}
-
  * @returns {string} CSS class
-
  */
 
 function getButtonStyle(addon) {
@@ -494,13 +445,9 @@ function getButtonStyle(addon) {
 }
 
 /**
-
  * Updates the add-on's button after an action has been performed (CSS class & event handlers).
-
  * @memberof Dialog
-
  * @param button
-
  */
 
 function refreshButtonStyle(button) {
@@ -540,13 +487,9 @@ function refreshButtonStyle(button) {
 }
 
 /**
-
  * Event handler for info buttons.
-
  * @memberof Dialog
-
  * @param rootNode
-
  */
 
 function bindInfoButtons(rootNode) {
@@ -588,13 +531,9 @@ function bindLicenseButtons(rootNode) {
 }
 
 /**
-
  * Event handler for action buttons.
-
  * @memberof Dialog
-
  * @param rootNode
-
  */
 
 function bindInstallButtons(rootNode) {
@@ -652,8 +591,6 @@ function bindInstallButtons(rootNode) {
 		refreshButtonStyle(this);
 
 		studio.extension.storage.setItem('ERROR', '');
-		
-		// studio.sendCommand('Addons.checkForUpdate');
 
 	});
 
@@ -662,17 +599,11 @@ function bindInstallButtons(rootNode) {
 }
 
 /**
-
  * Writes the pagination UI.
-
  * @memberof Dialog
-
  * @param repoName {string} Name of the current repository (add-on type).
-
  * @param pageNumber {number} Current page number.
-
  * @param maxPages {number} Max page number.
-
  */
 
 function writePagination(repoName, pageNumber, maxPages) {
@@ -757,15 +688,10 @@ function writePagination(repoName, pageNumber, maxPages) {
 }
 
 /**
-
  * @memberof Dialog
-
  * @param number
-
  * @param length
-
  * @returns {string}
-
  */
 
 function complementNumber(number, length) {
@@ -777,15 +703,10 @@ function complementNumber(number, length) {
 }
 
 /**
-
  * Formats an ISO date string to the format needed for the UI.
-
  * @memberof Dialog
-
  * @param rawDate {string} ISO date.
-
  * @returns {string} Formatted date.
-
  */
 
 function formatDate(rawDate) {
@@ -800,15 +721,10 @@ function formatDate(rawDate) {
 }
 
 /**
-
  * Returns an empty string if a parameter is null.
-
  * @memberof Dialog
-
  * @param val {string} Value of the parameter
-
  * @returns {string}
-
  */
 
 function stripNullValues(val) {
@@ -818,15 +734,10 @@ function stripNullValues(val) {
 }
 
 /**
-
  * Returns the HTML fragment for the specified add-on.
-
  * @memberof Dialog
-
  * @param addon {object}
-
  * @returns {string} HTML fragment.
-
  */
 
 function getHTMLFragment(addon) {
@@ -836,32 +747,94 @@ function getHTMLFragment(addon) {
 
 	status = (studio.extension.storage.getItem(addon.name).trim().length > 0) ? studio.extension.storage.getItem(addon.name).trim() : 'Invalid';
 
-	if (!addon.license) {
+	// if (!addon.license) {
 
-		fragment = '<li> <div class="options"><button class="' + getButtonStyle(addon) + '" data-key="' + stripNullValues(escape(JSON.stringify(addon))) + '"></button> <button class="nalicense"> N/A </button> <button class="infos" data-key="' + stripNullValues(escape(JSON.stringify(addon))) + '"></button></div><h2>' + stripNullValues(addon.name) + ' <small>- ' + formatDate(addon.updated_at) + ' <span class="downloadnumber"> ' + addon.downloads + ' downloads &nbsp</span></small> </h2><p>' + stripNullValues(addon.description) + ' <i>- by ' + stripNullValues(addon.owner) + '</i></p></li>';
+		// fragment = '<li> <div class="options"><button class="' + getButtonStyle(addon) + '" data-key="' + stripNullValues(escape(JSON.stringify(addon))) + '"></button> <button class="nalicense"> N/A </button> <button class="infos" data-key="' + stripNullValues(escape(JSON.stringify(addon))) + '"></button></div><h2>' + stripNullValues(addon.name) + ' <small>- ' + formatDate(addon.updated_at) + ' <span class="downloadnumber"> ' + addon.downloads + ' downloads &nbsp</span></small> </h2><p>' + stripNullValues(addon.description) + ' <i>- by ' + stripNullValues(addon.owner) + '</i></p></li>';
 
-	} else {
+		// ITEM
+		fragment = '<li>';
+		fragment += '<div class="studio-ext-addons-infos">';
 
-		fragment = '<li> <div class="options"><button class="' + getButtonStyle(addon) + '" data-key="' + stripNullValues(escape(JSON.stringify(addon))) + '"></button> <button class="license" data-key="' + stripNullValues(escape(JSON.stringify(addon))) + '">' + addon.license + '</button> <button class="infos" data-key="' + stripNullValues(escape(JSON.stringify(addon))) + '"></button></div><h2>' + stripNullValues(addon.name) + ' <small>- ' + formatDate(addon.updated_at) + ' <span class="downloadnumber"> ' + addon.downloads + ' downloads &nbsp</span></small> </h2><p>' + stripNullValues(addon.description) + ' <i>- by ' + stripNullValues(addon.owner) + '</i></p></li>';
+		// NAME & DATE
+		fragment += '<h2>' + stripNullValues(addon.name) + '<span class="date">- ' + formatDate(addon.updated_at) + ' </span>';
+		
+		// RATING SYSTEM
+		fragment += '<span class="rate">';
+		fragment += '<span class="colored">★</span>';
+		fragment += '<span class="colored">★</span>';
+		fragment += '<span class="colored">★</span>';
+		fragment += '<span>★</span>';
+		fragment += '<span>★</span>';
+		fragment += '</span>';
 
-	}
+		// DOWNLOAD COUNTER
+		fragment += '<span class="downloadnumber">' + addon.downloads + ' downloads</span></h2>';
+
+		// DESCRIPTION & AUTHOR
+		fragment += '<p>' + stripNullValues(addon.description) + ' <span class="author">- by ' + stripNullValues(addon.owner) + '</span></p>';
+		
+		fragment += '</div>';
+		fragment += '<div class="options">';
+
+		// MAIN BUTTON (Install / Update / Retry / Installed)
+		var mainBtn = {};
+		switch ( getButtonStyle(addon) ) {
+
+			case 'success':
+				mainBtn.icon = 'fa-check';
+				mainBtn.text = 'Installed'
+				break;
+
+	
+			case 'update':
+				mainBtn.icon = 'fa-refresh';
+				mainBtn.text = 'Installed'
+				break;
+	
+			case 'reboot':
+				mainBtn.icon = 'fa-ban';
+				mainBtn.text = 'Installed'
+				break;
+
+			default:
+				mainBtn.icon = 'fa-download';
+				mainBtn.text = 'Install'
+				break;
+		}
+
+		fragment += '<button class="button ' + getButtonStyle(addon) + '" data-key="' + stripNullValues(escape(JSON.stringify(addon))) + '"><i class="fa ' + mainBtn.icon + '"></i> ' + mainBtn.text + '</button>';
+		
+		// LICENSE BUTTON
+		if(addon.license){
+			fragment += '<button class="button license" data-key="' + stripNullValues(escape(JSON.stringify(addon))) + '">' + addon.license + '</button>';
+		} else{
+			fragment += '<button class="button license" disabled>N/A</button>';
+		}
+		
+		// GITHUB & BUG REPORT BUTTONS
+		fragment += '<button class="button github infos" data-key="' + stripNullValues(escape(JSON.stringify(addon))) + '"><i class="fa fa-github"></i></button>';
+		fragment += '<button class="button bug"><i class="fa fa-bug"></i></button>';
+		fragment += '</div>';
+
+		fragment += '</li>';
+
+
+	// } else {
+
+	// 	fragment = '<li> <div class="options"><button class="' + getButtonStyle(addon) + '" data-key="' + stripNullValues(escape(JSON.stringify(addon))) + '"></button> <button class="license" data-key="' + stripNullValues(escape(JSON.stringify(addon))) + '">' + addon.license + '</button> <button class="infos" data-key="' + stripNullValues(escape(JSON.stringify(addon))) + '"></button></div><h2>' + stripNullValues(addon.name) + ' <small>- ' + formatDate(addon.updated_at) + ' <span class="downloadnumber"> ' + addon.downloads + ' downloads &nbsp</span></small> </h2><p>' + stripNullValues(addon.description) + ' <i>- by ' + stripNullValues(addon.owner) + '</i></p></li>';
+
+	// }
 
 	return fragment;
 
 }
 
 /**
-
  * Gets the contents of the specified repository (add-on type) and displays it on the page.
-
  * @memberof Dialog
-
  * @param repoName {string} Name of the repository
-
  * @param pageNumber {number} Number of the page to display. Default is 1. [optional]
-
  * @param searchString {string} Search string to filter the results. Default is empty. [optional]
-
  */
 
 function getRepoContent(repoName, pageNumber, searchString) {
@@ -903,9 +876,7 @@ function getRepoContent(repoName, pageNumber, searchString) {
 	}).done(function (repoContent) {
 
 		var addonsList = repoContent.__ENTITIES;
-
 		var nbItems = repoContent.__COUNT;
-
 		if (searchString && searchString.trim().length > 0) {
 
 			$('#items-found-number').html(" <b>" + nbItems + " " + (repoName.replace('wakanda-', '')).slice(0, -1) + "s found </b> out of " + total_items_per_tab);
@@ -918,11 +889,8 @@ function getRepoContent(repoName, pageNumber, searchString) {
 		}
 
 		var item;
-
 		var fragment = $();
-
 		var fragmentText = '';
-
 		if (addonsList.length > 0) {
 
 			for (i = 0; i < addonsList.length; i++) {
@@ -930,43 +898,25 @@ function getRepoContent(repoName, pageNumber, searchString) {
 				item = addonsList[i];
 
 				dataObj.ID = item.ID;
-
 				dataObj.name = item.name;
-
 				dataObj.type = item.type;
-
 				dataObj.hash = item.sha;
-
 				dataObj.html_url = item.html_url;
-
 				dataObj.git_url = item.git_url;
-
 				dataObj.owner = item.owner;
-
 				dataObj.description = item.description;
-
 				dataObj.created_at = item.created_at;
-
 				dataObj.updated_at = item.updated_at;
-
 				dataObj.pushed_at = item.pushed_at;
-
 				dataObj.downloads = item.downloads;
-
 				dataObj.githubID = getID(item.git_url);
-
 				dataObj.license = item.license;
-
 				dataObj.licenseAddress = item.licenseAddress;
-
 				studio.extension.storage.setItem('addonParams', escape(JSON.stringify(dataObj)));
 
 				//studio.extension.storage.setItem('pluginName', dataObj.name);
-
 				//studio.extension.storage.setItem('pluginType', dataObj.type);
-
 				//studio.extension.storage.setItem('pluginHash', dataObj.hash);
-
 
 				studio.sendCommand('Addons.check');
 
@@ -975,11 +925,8 @@ function getRepoContent(repoName, pageNumber, searchString) {
 				if (studio.extension.storage.getItem('ERROR') !== '') {
 
 					//studio.extension.storage.setItem('alertMessage', studio.extension.storage.getItem('ERROR'));
-
 					//studio.sendCommand('Addons.alert');
-
 					studio.extension.storage.setItem('ERROR', '');
-
 				}
 
 				addonsCount++;
@@ -1147,16 +1094,16 @@ function addHoverEvent() {
 
 	// });
 
-	$('.infos').hover(function (event) {
+	// $('.infos').hover(function (event) {
 
-		$('<span class="tooltip"></span>').text("View on GitHub")
-		.appendTo('#contentList li')
-		.css('top', ($(this).position().top - 25) + 'px')
-		.css('left', ($(this).position().left + 13) + 'px')
-		.fadeIn('slow');
-	}, function () {
-		$('.tooltip').remove();
-	});
+	// 	$('<span class="tooltip"></span>').text("View on GitHub")
+	// 	.appendTo('#contentList li')
+	// 	.css('top', ($(this).position().top - 25) + 'px')
+	// 	.css('left', ($(this).position().left + 13) + 'px')
+	// 	.fadeIn('slow');
+	// }, function () {
+	// 	$('.tooltip').remove();
+	// });
 
 }
 
