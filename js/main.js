@@ -288,6 +288,8 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 
 			if (addon.status == "Installed")
 				addon.downloads = addon.downloads + 1;
+			
+			checkAddonsStatus();
 
 			studio.extension.storage.setItem('ERROR', '');
 		}
@@ -304,6 +306,8 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 
 			if (addon.status == "Installed")
 				addon.downloads = addon.downloads + 1;
+				
+			checkAddonsStatus();
 
 			studio.extension.storage.setItem('ERROR', '');
 		}
