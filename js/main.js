@@ -94,7 +94,8 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 
 	$scope.addCustomRepo = function () {
 
-		var repoURL = studio.prompt('Enter the URL of the ' + $scope.tabNavName + ' repository to import:', '');
+		var repoURL = studio.prompt('Enter the URL of the ' + $scope.tabNavName + '\'s repository to import:', '');
+
 		var brancheName;
 
 		repoURL = repoURL.trim();
@@ -354,6 +355,18 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 	$scope.openUrlInBrowser = function (url) {
 		window.open(url, '_blank');
 	}
+
+	// ---------------------------------------------
+	// > TOOLTIPS
+	// ---------------------------------------------
+	$('.tooltip').each(function(index, el) {
+
+		var elWidth = $(el).outerWidth();
+		var btnWidth = $(el).parent().outerWidth();
+		var newLeft = (btnWidth / 2) - (elWidth / 2);
+
+		$(el).css('left', newLeft);
+	});
 
 });
 
