@@ -221,6 +221,7 @@ input{
 	}
 	.filters-sort{
 		margin-right: 2rem;
+		user-select: none;
 
 		select{
 			font-size: 1rem;
@@ -228,7 +229,9 @@ input{
 	}
 	.sort-order-btn{
 		border: 0;
-
+		display: inline-block;
+		width: 4rem;
+		user-select: none;
 	}
 	.filters-number{
 		margin-right: 3rem;

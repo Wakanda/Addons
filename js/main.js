@@ -94,7 +94,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 
 	$scope.addCustomRepo = function () {
 
-		var repoURL = studio.prompt('Enter the URL of the ' + $scope.tabNavName + '\'s repository to import:', '');
+		var repoURL = studio.prompt('Enter the URL of the ' + $scope.tabNavName.substring(0, $scope.tabNavName.length - 1) + '\'s repository to import:', '');
 
 		var brancheName;
 
