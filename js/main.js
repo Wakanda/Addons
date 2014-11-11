@@ -46,7 +46,9 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 	console.groupEnd();
 
 	studio.extension.storage.setItem('ERROR', '');
+	
 
+    $scope.searchTerm = "";
 	// ------------------------------------------------------------------------
 	// > TABS NAVIGATION (and main filter for the repeater)
 	// ------------------------------------------------------------------------
@@ -94,7 +96,8 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 
 	$scope.addCustomRepo = function () {
 
-		var repoURL = studio.prompt('Enter the URL of the ' + $scope.tabNavName + ' repository to import:', '');
+		var repoURL = studio.prompt('Enter the URL of the ' + $scope.tabNavName.substring(0, $scope.tabNavName.length - 1) + '\'s repository to import:', '');
+
 		var brancheName;
 
 		repoURL = repoURL.trim();
@@ -136,7 +139,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 		studio.extension.storage.setItem('externals', params.name);
 		studio.sendCommand('Addons.downloadExt');
 
-		studio.alert((studio.extension.storage.getItem('ERROR') === 'ok') ? params.name + ' ' + $scope.tabNavName + ' was installed successfully.' : params.name + ' ' + params.type + ' installation failed.');
+		studio.alert((studio.extension.storage.getItem('ERROR') === 'ok') ? 'The ' + params.name + ' ' + $scope.tabNavName + ' was installed successfully.' : params.name + ' ' + params.type + ' installation failed.');
 		console.log(studio.extension.storage.getItem('ERROR'));
 
 		studio.extension.storage.setItem('ERROR', '');
@@ -270,16 +273,26 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 			// Record score in local addons object
 			addon.stars = note;
 		}
-
+		
+		
+		// ---------------------------------------------------------------------------------------
+		// > custom filter to filter addons while searching just by name , description or owner 
+		// ---------------------------------------------------------------------------------------
+		
+		
+        $scope.addonContainsSearchTerm = function(addon) { 
+		   var txt = $scope.searchTerm.toLowerCase();
+           return $scope.searchTerm.length == 0 || addon.name.toLowerCase().indexOf(txt) >= 0 || addon.description.toLowerCase().indexOf(txt) >= 0 || addon.owner.toLowerCase().indexOf(txt) >= 0 ;
+        }
 		// ------------------------------------------------------------------------
 		// > BUTTONS ACTIONS
 		// ------------------------------------------------------------------------
 
 		$scope.addonInstall = function (addon) {
-
+           
 			studio.extension.storage.setItem('addonParams', escape(JSON.stringify(addon)));
 			studio.extension.storage.setItem('externals', addon.name);
-
+            
 			studio.sendCommand('Addons.downloadExt');
 
 			studio.sendCommand('Addons.check');
@@ -354,6 +367,18 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 	$scope.openUrlInBrowser = function (url) {
 		window.open(url, '_blank');
 	}
+
+	// ---------------------------------------------
+	// > TOOLTIPS
+	// ---------------------------------------------
+	$('.tooltip').each(function(index, el) {
+
+		var elWidth = $(el).outerWidth();
+		var btnWidth = $(el).parent().outerWidth();
+		var newLeft = (btnWidth / 2) - (elWidth / 2);
+
+		$(el).css('left', newLeft);
+	});
 
 });
 
