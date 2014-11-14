@@ -10,3 +10,7 @@ Here is what is different from the pre-installed version of the Addons :
 
 2. Possibility to install widgets directly by their github url, for example https://github.com/rmello4d/BarCode/tree/WAK10
 
+3. Possibility to sort (widgets,themes , extensions ...) by a some usefull criteria : Date , Install , Installed , Upgrade , Developer 
+
+4. Possibilty to get (widgets,themes , extensions ...) for a specifique wakanda version (main , wakanda9 , wakanda10)
+
