@@ -1,16 +1,13 @@
-Addons
+Add-ons Extension
 ======
 
-The Addons extension is already in Wakanda. This version is for users who want to try the latest stable features available. 
+A version of the Add-ons Extension is already intsalled in Wakanda; however, you can use this version to try out the latest features we're working on. 
 
-Here is what is different from the pre-installed version of the Addons :
+Here is what is different from the pre-installed version of the Add-ons Extension:
 
-1. Download of multiple widgets at once : if you add the attribute externalWidgets in your package, these widgets will also be installed. Example : Widget Tabs (install this widget via Addons and list of required widgets will be also installed)
+1. Download multiple widgets at once: pass an array of widgets to install to the externalWidgets attribute in your widget's package.json file. These widgets will  be installed when your main widget is installed. For example, if you try to install the Tabs wqidget, other widgets will be installed with it like the TabsBar, TabsContainer, TabsTab, Button, and Text.
  
+2. Directly install widgets using their GitHub repository's URL. For example, when you click the Import a repository via a URL, you can enter the  https://github.com/rmello4d/BarCode/tree/WAK10 URL and the widget will be installed into the selected project or Favorites folder.
 
-2. Possibility to install widgets directly by their github url, for example https://github.com/rmello4d/BarCode/tree/WAK10
-
-3. Possibility to sort (widgets,themes , extensions ...) by a some usefull criteria : Date , Install , Installed , Upgrade , Developer 
-
-4. Possibilty to get (widgets,themes , extensions ...) for a specifique wakanda version (main , wakanda9 , wakanda10)
+3. Sort the add-ons by creation date, name, number of downloads, developer as well as if the widget can be installed, was installed, or needs to be upgraded.
 

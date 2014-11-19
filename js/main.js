@@ -87,7 +87,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 	// ------------------------------------------------------------------------
 	// > SORT FILTER DEFAULT
 	// ------------------------------------------------------------------------
-	$scope.sortFilter = 'updated_at';
+	$scope.sortFilter = 'name';
 	$scope.sortOrder = true;
 
 	// ------------------------------------------------------------------------
@@ -389,9 +389,11 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 angular.module('AddonsRest', ['ngResource'])
 .factory('AddonsRest', ['$resource',
 		function ($resource) {
-
+		
+            var version = studio.version.split(' ')[0];
+			var branch = version == "Dev" ? "master" : "WAK" + version;
 			return {
-				getAddons : $resource('http://addons.wakanda.org/rest/Wam/?$top=1000')
+				getAddons : $resource('http://addons.wakanda.org/rest/Wam/?$filter="branch="'+branch+'""&$top=1000')
 			}
 
 		}
