@@ -88,7 +88,17 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 	// > SORT FILTER DEFAULT
 	// ------------------------------------------------------------------------
 	$scope.sortFilter = 'name';
-	$scope.sortOrder = true;
+	$scope.sortOrder = false;
+	
+	
+	$scope.$watch('sortFilter', function (criteria) {
+			
+			if( criteria == "name" || criteria == "owner") 
+			       $scope.sortOrder = false;
+		    else 
+			       $scope.sortOrder = true;
+
+		});
 
 	// ------------------------------------------------------------------------
 	// > ADD CUSTOM REPO
@@ -282,7 +292,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 		
         $scope.addonContainsSearchTerm = function(addon) { 
 		   var txt = $scope.searchTerm.toLowerCase();
-           return $scope.searchTerm.length == 0 || addon.name.toLowerCase().indexOf(txt) >= 0 || addon.description.toLowerCase().indexOf(txt) >= 0 || addon.owner.toLowerCase().indexOf(txt) >= 0 ;
+           return $scope.searchTerm.length == 0 || addon.name.toLowerCase().indexOf(txt) >= 0 || (addon.description != null && addon.description.toLowerCase().indexOf(txt) >= 0) || (addon.owner != null && addon.owner.toLowerCase().indexOf(txt) >= 0) ;
         }
 		// ------------------------------------------------------------------------
 		// > BUTTONS ACTIONS
