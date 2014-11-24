@@ -249,7 +249,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 			"disable" : false
 		});
 
-		$scope.currentProject = $scope.projectsList[0];
+		$scope.currentProject = $scope.projectsList[0].path;
 		studio.extension.storage.setItem('projectpath', $scope.projectsList[0].path);
 
 		// Initial check for installed addons for the default selected project
@@ -261,15 +261,14 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 
 		$scope.changeCurrentProject = function (project) {
 
-			studio.extension.storage.setItem('projectpath', project.path);
+			studio.extension.storage.setItem('projectpath', project);
 
-			console.log('project changed to' + project.path);
+			console.log('project changed to' + project);
+			console.log('Check all addons');
 
-			console.log('Check all addons')
 			checkAddonsStatus();
 
 			console.log(studio.extension.storage);
-
 			console.log(project);
 		}
 
@@ -407,34 +406,4 @@ angular.module('AddonsRest', ['ngResource'])
 			}
 
 		}
-	])
-.directive('optionsDisabled', function ($parse) {
-	var disableOptions = function (scope, attr, element, data, fnDisableIfTrue) {
-		// refresh the disabled options in the select element.
-		$("option[value!='?']", element).each(function (i, e) {
-			var locals = {};
-			locals[attr] = data[i];
-			$(this).attr("disabled", fnDisableIfTrue(scope, locals));
-		});
-	};
-	return {
-		priority : 0,
-		require : 'ngModel',
-		link : function (scope, iElement, iAttrs, ctrl) {
-			// parse expression and build array of disabled options
-			var expElements = iAttrs.optionsDisabled.match(/^\s*(.+)\s+for\s+(.+)\s+in\s+(.+)?\s*/);
-			var attrToWatch = expElements[3];
-			var fnDisableIfTrue = $parse(expElements[1]);
-			scope.$watch(attrToWatch, function (newValue, oldValue) {
-				if (newValue)
-					disableOptions(scope, expElements[2], iElement, newValue, fnDisableIfTrue);
-			}, true);
-			// handle model updates properly
-			scope.$watch(iAttrs.ngModel, function (newValue, oldValue) {
-				var disOptions = $parse(attrToWatch)(scope);
-				if (newValue)
-					disableOptions(scope, expElements[2], iElement, disOptions, fnDisableIfTrue);
-			});
-		}
-	};
-});
+	]);
