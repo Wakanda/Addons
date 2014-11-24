@@ -249,8 +249,16 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 			"disable" : false
 		});
 
+		// Set the selected project to 'first one' 
 		$scope.currentProject = $scope.projectsList[0].path;
 		studio.extension.storage.setItem('projectpath', $scope.projectsList[0].path);
+
+		// Reset the selected project to 'first one' when changing tab
+		$scope.$watch('tabNav', function(){
+			$scope.currentProject = $scope.projectsList[0].path;
+			studio.extension.storage.setItem('projectpath', $scope.projectsList[0].path);
+		});
+		
 
 		// Initial check for installed addons for the default selected project
 		checkAddonsStatus();
