@@ -255,8 +255,10 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 
 		// Reset the selected project to 'first one' when changing tab
 		$scope.$watch('tabNav', function(){
-			$scope.currentProject = $scope.projectsList[0].path;
-			studio.extension.storage.setItem('projectpath', $scope.projectsList[0].path);
+			if($scope.currentProject === 'Favorites'){
+				$scope.currentProject = $scope.projectsList[0].path;
+				studio.extension.storage.setItem('projectpath', $scope.projectsList[0].path);
+			}
 		});
 		
 
