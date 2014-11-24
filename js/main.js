@@ -253,9 +253,9 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 		$scope.currentProject = $scope.projectsList[0].path;
 		studio.extension.storage.setItem('projectpath', $scope.projectsList[0].path);
 
-		// Reset the selected project to 'first one' when changing tab
+		// Reset the selected project to 'first one' when changing tab to wakanda-modules
 		$scope.$watch('tabNav', function(){
-			if($scope.currentProject === 'Favorites'){
+			if($scope.tabNav === 'wakanda-modules' && $scope.currentProject === 'Favorites'){
 				$scope.currentProject = $scope.projectsList[0].path;
 				studio.extension.storage.setItem('projectpath', $scope.projectsList[0].path);
 			}
