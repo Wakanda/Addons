@@ -67,8 +67,10 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 		// studio.extension.storage.setItem('projectpath', $scope.projectsList[0].path);
 		if (newVal == 'wakanda-modules') {
 			$scope.projectsList.splice($scope.projectsList.length - 2, 2);
-			if ($scope.currentProject.path == "Favorites")
-				studio.extension.storage.setItem('projectpath', $scope.projectsList[0].path);
+			if ($scope.currentProject.path == "Favorites"){
+				$scope.currentProject = $scope.projectsList[0].path;
+				$scope.changeCurrentProject($scope.currentProject);
+			}
 		}
 		if (oldValue == 'wakanda-modules') {
 			$scope.projectsList.push({
