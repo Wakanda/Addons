@@ -351,7 +351,9 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 		function checkAddonsStatus() {
 
 			angular.forEach($scope.addons, function (addon) {
-
+                                // Set Error Item to void string
+	                        studio.extension.storage.setItem('ERROR', '');
+	                        
 				studio.extension.storage.setItem('addonParams', escape(JSON.stringify(addon)));
 				studio.sendCommand('Addons.check');
 				if (studio.extension.storage.getItem('ERROR') === '' || studio.extension.storage.getItem('ERROR') === 'ok') {
