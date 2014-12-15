@@ -40,7 +40,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 			"isEnterprise" : studio.isEnterprise
 		}
 	};
-	$scope.branch = $scope.solutionInfos.studio.version == "Dev" ? "master" : "WAK" + $scope.solutionInfos.studio.version;
+	$scope.branch = ($scope.solutionInfos.studio.version == "Dev" || $scope.solutionInfos.studio.version == "0.0.0.0") ? "master" : "WAK" + $scope.solutionInfos.studio.version;
 	console.group('Solution Infos');
 	console.log($scope.solutionInfos);
 	console.groupEnd();
@@ -196,29 +196,26 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 
 		// Stock current tab addons
 		$scope.addons = $filter('filter')(data.__ENTITIES, {
-				type : $scope.tabNav,
-				branch : $scope.branch
+				type : $scope.tabNav
 			});
 
 		// Handle tab change event and refresh addons list
 		$scope.$watch('tabNav', function (selectedTab) {
 			$scope.addons = $filter('filter')(data.__ENTITIES, {
-					type : selectedTab,
-					branch : $scope.branch
+					type : selectedTab
 				});
 			checkAddonsStatus();
 
 		});
 
-		$scope.$watch('branch', function (version) {
-			$scope.addons = $filter('filter')(data.__ENTITIES, {
-					type : $scope.tabNav,
-					branch : version
-				});
+		// $scope.$watch('branch', function (version) {
+			// $scope.addons = $filter('filter')(data.__ENTITIES, {
+					// type : $scope.tabNav
+				// });
 
-			checkAddonsStatus();
+			// checkAddonsStatus();
 
-		});
+		// });
 
 		// Log
 		console.group('All ' + $scope.tabNavName + ' from REST API in the selected tab category');
@@ -413,10 +410,10 @@ angular.module('AddonsRest', ['ngResource'])
 .factory('AddonsRest', ['$resource',
 		function ($resource) {
 		
-            var version = studio.version.split(' ')[0];
-			var branch = version == "Dev" ? "master" : "WAK" + version;
+            // var version = studio.version.split(' ')[0];
+			// var branch = (version == "Dev" || version == "0.0.0.0")? "master" : "WAK" + version;
 			return {
-				getAddons : $resource('http://addons.wakanda.org/rest/Wam/?$filter="branch="'+branch+'""&$top=1000')
+				getAddons : $resource('http://addons.wakanda.org/rest/Addons/?&$top=1000')
 			}
 
 		}

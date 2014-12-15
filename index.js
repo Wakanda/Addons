@@ -480,7 +480,7 @@ function loadAddon(addonParams) {
    
 	try {
        
-		zipUrl = (addonParams.zip_url) ? addonParams.zip_url : WAM_BASE + 'download?id=' + addonParams.ID+"&v="+studio.version.split(" ")[0];
+		zipUrl = (addonParams.zip_url) ? addonParams.zip_url : WAM_BASE + 'download?id=' + addonParams.ID;
         
 		xmlHttp = new studio.XMLHttpRequest();
 
