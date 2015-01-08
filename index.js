@@ -479,8 +479,8 @@ function loadAddon(addonParams) {
 	var rootAddonsFolder = getAddonsRootFolder(addonParams.type);
    
 	try {
-       
-		zipUrl = (addonParams.zip_url) ? addonParams.zip_url : WAM_BASE + 'download?id=' + addonParams.ID;
+        
+		zipUrl = (addonParams.zip_url) ? addonParams.zip_url : WAM_BASE + 'download?id=' + addonParams.ID + '&sha='+addonParams.hash;
         
 		xmlHttp = new studio.XMLHttpRequest();
 
@@ -752,7 +752,7 @@ actions.check = function check() {
 
 		}
 
-		if (typeof(parsed.hash) === 'undefined' || pluginHash === parsed.hash) {
+		if (pluginHash === parsed.hash) {
 
 			writeLog(pluginName, pluginType, 'same hash');
 
@@ -891,56 +891,54 @@ actions.alert = function alert() {
 
 actions.checkForUpdate = function checkForUpdate(message) {
     
-	// if (message.source.data[0].name == "Widgets") {
+	if (message.source.data[0].name == "Widgets") {
 
-		// var widgets = message.source.data[0].folders;
-		// var toUpdate = [];
+		var widgets = message.source.data[0].folders;
+		var rootAddonsFolder = getAddonsRootFolder('wakanda-widgets');
 
 		// studio.currentSolution.restoreItemsIcon([studio.extension.getFolder().path + "update.png"]);
+           
+		for (var i = 0; i < widgets.length; i++) {
 
-		// for (var i = 0; i < widgets.length; i++) {
+			var query = WAM_BASE + 'rest/Addons/?$filter="name=' + widgets[i].name + '"';
+			var xmlHttp = new studio.XMLHttpRequest();
 
-			// var query = WAM_BASE + 'rest/Addons/?$filter="name=' + widgets[i].name + '"';
-			// var xmlHttp = new studio.XMLHttpRequest();
+			xmlHttp.open('GET', query);
 
-			// xmlHttp.open('GET', query);
+			xmlHttp.send();
 
-			// xmlHttp.send();
+			var addonsitems = JSON.parse(xmlHttp.response).__ENTITIES;
 
-			// var addonsitems = JSON.parse(xmlHttp.response).__ENTITIES;
+			if (addonsitems.length > 0) {
 
-			// if (addonsitems.length > 0) {
+				item = addonsitems[0];
+                
+				var jsonFile = File(rootAddonsFolder.path + item.name + '/package.json');
 
-				// item = addonsitems[0];
+				try {
 
-				// var rootAddonsFolder = getAddonsRootFolder(item.type);
+					var parsed;
 
-				// var jsonFile = File(rootAddonsFolder.path + item.name + '/package.json');
+					parsed = (jsonFile.exists) ? JSON.parse(jsonFile) : {};
 
-				// try {
+				} catch (e) {
 
-					// var parsed;
+					studio.alert('Add-on ' + item.name + ' has an invalid package.json.');
 
-					// parsed = (jsonFile.exists) ? JSON.parse(jsonFile) : {};
+				}
 
-				// } catch (e) {
-
-					// studio.alert('Add-on ' + item.name + ' has an invalid package.json.');
-
-				// }
-
-				// if (!(typeof(parsed.hash) === 'undefined' || item.sha === parsed.hash)){
+				if (item.sha != parsed.hash){
 				    
-				    // studio.setCommandWarning( "Addons.showDialog", true );
-					// return;
-				// }
+				    studio.setCommandWarning( "Addons.showDialog", true );
+					return;
+				}
 					
 
-			// }
+			}
 
-		// }
+		}
 	
-         // studio.setCommandWarning( "Addons.showDialog", false );
-	// }
-
+        studio.setCommandWarning( "Addons.showDialog", false ); 
+	}
+  
 };

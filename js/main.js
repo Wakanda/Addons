@@ -40,15 +40,16 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 			"isEnterprise" : studio.isEnterprise
 		}
 	};
+
 	$scope.branch = ($scope.solutionInfos.studio.version == "Dev" || $scope.solutionInfos.studio.version == "0.0.0.0") ? "master" : "WAK" + $scope.solutionInfos.studio.version;
+	// $scope.branch  = "WAK9";
 	console.group('Solution Infos');
 	console.log($scope.solutionInfos);
 	console.groupEnd();
 
 	studio.extension.storage.setItem('ERROR', '');
-	
 
-    $scope.searchTerm = "";
+	$scope.searchTerm = "";
 	// ------------------------------------------------------------------------
 	// > TABS NAVIGATION (and main filter for the repeater)
 	// ------------------------------------------------------------------------
@@ -67,7 +68,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 		// studio.extension.storage.setItem('projectpath', $scope.projectsList[0].path);
 		if (newVal == 'wakanda-modules') {
 			$scope.projectsList.splice($scope.projectsList.length - 2, 2);
-			if ($scope.currentProject.path == "Favorites"){
+			if ($scope.currentProject.path == "Favorites") {
 				$scope.currentProject = $scope.projectsList[0].path;
 				$scope.changeCurrentProject($scope.currentProject);
 			}
@@ -91,17 +92,22 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 	// ------------------------------------------------------------------------
 	$scope.sortFilter = 'name';
 	$scope.sortOrder = false;
-	
-	
+
 	$scope.$watch('sortFilter', function (criteria) {
-			
-			if( criteria == "name" || criteria == "owner") 
-			       $scope.sortOrder = false;
-		    else 
-			       $scope.sortOrder = true;
 
-		});
+		if (criteria == "name" || criteria == "owner")
+			$scope.sortOrder = false;
+		else
+			$scope.sortOrder = true;
 
+	});
+    $scope.mySplit = function(s, nb) {
+	
+         $scope.array = s.split('<br>');
+	
+         return $scope.result = $scope.array[nb];
+	
+    }
 	// ------------------------------------------------------------------------
 	// > ADD CUSTOM REPO
 	// ------------------------------------------------------------------------
@@ -169,7 +175,26 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 		angular.forEach(data.__ENTITIES, function (addon) {
 
 			// Rename fha to hash
-			addon.hash = addon.sha;
+			// if ($scope.branch == "master") {
+				// addon.hash = addon.sha;
+			// } else {
+			    var go = false;
+				for (var i = 0; i < addon.branchs.__ENTITIES.length; i++) {
+					switch(addon.branchs.__ENTITIES[i].branch){
+                    case $scope.branch:
+						addon.hash = addon.branchs.__ENTITIES[i].sha;
+						go = true;
+                        break;
+					case "master":
+					    addon.hash = addon.branchs.__ENTITIES[i].sha;
+						break;
+					default:
+					    break;
+					}
+                    if(go) break;
+				}
+
+			// }
 
 			// if 'license_urls' doesn't exist, copy github 'HTML_url' in 'license_url'
 			// ------------------------------------------------------------------------
@@ -197,6 +222,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 		// Stock current tab addons
 		$scope.addons = $filter('filter')(data.__ENTITIES, {
 				type : $scope.tabNav
+		
 			});
 
 		// Handle tab change event and refresh addons list
@@ -204,18 +230,19 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 			$scope.addons = $filter('filter')(data.__ENTITIES, {
 					type : selectedTab
 				});
+		    changeAddonsHash();
 			checkAddonsStatus();
 
 		});
 
-		// $scope.$watch('branch', function (version) {
-			// $scope.addons = $filter('filter')(data.__ENTITIES, {
-					// type : $scope.tabNav
-				// });
+		$scope.$watch('branch', function (version) {
+			$scope.addons = $filter('filter')(data.__ENTITIES, {
+					type : $scope.tabNav
+				});
+            changeAddonsHash();
+			checkAddonsStatus();
 
-			// checkAddonsStatus();
-
-		// });
+		});
 
 		// Log
 		console.group('All ' + $scope.tabNavName + ' from REST API in the selected tab category');
@@ -248,18 +275,17 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 			"disable" : false
 		});
 
-		// Set the selected project to 'first one' 
+		// Set the selected project to 'first one'
 		$scope.currentProject = $scope.projectsList[0].path;
 		studio.extension.storage.setItem('projectpath', $scope.projectsList[0].path);
 
 		// Reset the selected project to 'first one' when changing tab to wakanda-modules
-		$scope.$watch('tabNav', function(){
-			if($scope.tabNav === 'wakanda-modules' && $scope.currentProject === 'Favorites'){
+		$scope.$watch('tabNav', function () {
+			if ($scope.tabNav === 'wakanda-modules' && $scope.currentProject === 'Favorites') {
 				$scope.currentProject = $scope.projectsList[0].path;
 				studio.extension.storage.setItem('projectpath', $scope.projectsList[0].path);
 			}
 		});
-		
 
 		// Initial check for installed addons for the default selected project
 		checkAddonsStatus();
@@ -291,26 +317,25 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 			// Record score in local addons object
 			addon.stars = note;
 		}
-		
-		
+
 		// ---------------------------------------------------------------------------------------
-		// > custom filter to filter addons while searching just by name , description or owner 
+		// > custom filter to filter addons while searching just by name , description or owner
 		// ---------------------------------------------------------------------------------------
-		
-		
-        $scope.addonContainsSearchTerm = function(addon) { 
-		   var txt = $scope.searchTerm.toLowerCase();
-           return $scope.searchTerm.length == 0 || addon.name.toLowerCase().indexOf(txt) >= 0 || (addon.description != null && addon.description.toLowerCase().indexOf(txt) >= 0) || (addon.owner != null && addon.owner.toLowerCase().indexOf(txt) >= 0) ;
-        }
+
+
+		$scope.addonContainsSearchTerm = function (addon) {
+			var txt = $scope.searchTerm.toLowerCase();
+			return $scope.searchTerm.length == 0 || addon.name.toLowerCase().indexOf(txt) >= 0 || (addon.description != null && addon.description.toLowerCase().indexOf(txt) >= 0) || (addon.owner != null && addon.owner.toLowerCase().indexOf(txt) >= 0);
+		}
 		// ------------------------------------------------------------------------
 		// > BUTTONS ACTIONS
 		// ------------------------------------------------------------------------
 
 		$scope.addonInstall = function (addon) {
-           
+
 			studio.extension.storage.setItem('addonParams', escape(JSON.stringify(addon)));
 			studio.extension.storage.setItem('externals', addon.name);
-            
+
 			studio.sendCommand('Addons.downloadExt');
 
 			studio.sendCommand('Addons.check');
@@ -319,7 +344,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 
 			if (addon.status == "Installed")
 				addon.downloads = addon.downloads + 1;
-			
+
 			checkAddonsStatus();
 
 			studio.extension.storage.setItem('ERROR', '');
@@ -337,22 +362,45 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 
 			if (addon.status == "Installed")
 				addon.downloads = addon.downloads + 1;
-				
+
 			checkAddonsStatus();
 
 			studio.extension.storage.setItem('ERROR', '');
 		}
 
+		
+        function changeAddonsHash()  {
+		
+		angular.forEach($scope.addons, function (addon) {
+		var go = false;
+		for (var i = 0; i < addon.branchs.__ENTITIES.length; i++) {
+		            
+					switch(addon.branchs.__ENTITIES[i].branch){
+                    case $scope.branch:
+						addon.hash = addon.branchs.__ENTITIES[i].sha;
+						go = true;
+                        break;
+					case "master":
+					    addon.hash = addon.branchs.__ENTITIES[i].sha;
+						break;
+					default:
+					    break;
+					}
+                    if(go) break;
+				}
+		
+		
+		});
+		}
 		// ------------------------------------------------------------------------
 		// > CHECK ADDON STATUS (install, installed, update, ...)
 		// ------------------------------------------------------------------------
-
 		function checkAddonsStatus() {
 
 			angular.forEach($scope.addons, function (addon) {
-                                // Set Error Item to void string
-	                        studio.extension.storage.setItem('ERROR', '');
-	                        
+				// Set Error Item to void string
+				studio.extension.storage.setItem('ERROR', '');
+
 				studio.extension.storage.setItem('addonParams', escape(JSON.stringify(addon)));
 				studio.sendCommand('Addons.check');
 				if (studio.extension.storage.getItem('ERROR') === '' || studio.extension.storage.getItem('ERROR') === 'ok') {
@@ -391,10 +439,10 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 	// ---------------------------------------------
 	// > TOOLTIPS
 	// ---------------------------------------------
-	$('.tooltip').each(function(index, el) {
-
+	$('.tooltip').each(function (index, el) {
+        debugger;
 		var elWidth = $(el).outerWidth();
-		var btnWidth = $(el).parent().outerWidth();
+		var btnWidth = 26 ;//$(el).parent().outerWidth();
 		var newLeft = (btnWidth / 2) - (elWidth / 2);
 
 		$(el).css('left', newLeft);
@@ -409,11 +457,16 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 angular.module('AddonsRest', ['ngResource'])
 .factory('AddonsRest', ['$resource',
 		function ($resource) {
-		
-            // var version = studio.version.split(' ')[0];
-			// var branch = (version == "Dev" || version == "0.0.0.0")? "master" : "WAK" + version;
+
+			// var version = studio.version.split(' ')[0];
+			// var branch = (version == "Dev" || version == "0.0.0.0") ? "master" : "WAK" + version;
+			// var branchFilter = "";
+			// branch="WAK9";
+			// if (branch != "master") {
+				// branchFilter = '&$expand=branchs&$filter="branchs.branch="' + branch + '""';
+			// }
 			return {
-				getAddons : $resource('http://addons.wakanda.org/rest/Addons/?&$top=1000')
+				getAddons : $resource('http://addons.wakanda.org/rest/Addons/?&$top=1000&$expand=branchs')
 			}
 
 		}
