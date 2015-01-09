@@ -101,6 +101,10 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 			$scope.sortOrder = true;
 
 	});
+	
+	// ------------------------------------------------------------------------
+	// > Split description from version info
+	// ------------------------------------------------------------------------
     $scope.mySplit = function(s, nb) {
 	
          $scope.array = s.split('<br>');
@@ -183,10 +187,22 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 					switch(addon.branchs.__ENTITIES[i].branch){
                     case $scope.branch:
 						addon.hash = addon.branchs.__ENTITIES[i].sha;
+						// if 'license_urls' doesn't exist, copy github 'HTML_url' in 'license_url'
+			// ------------------------------------------------------------------------
+			            addon.github_url = addon.html_url.replace(/\/tree\/.*/,"/tree/" + $scope.branch);
+			            if (!addon.license_url) {
+				            addon.license_url = addon.github_url;
+			            }
 						go = true;
                         break;
 					case "master":
 					    addon.hash = addon.branchs.__ENTITIES[i].sha;
+						// if 'license_urls' doesn't exist, copy github 'HTML_url' in 'license_url'
+			// ------------------------------------------------------------------------
+			            addon.github_url = addon.html_url.replace(/\/tree\/.*/,"/tree/master");
+			            if (!addon.license_url) {
+				            addon.license_url = addon.github_url;
+			            }
 						break;
 					default:
 					    break;
@@ -196,11 +212,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 
 			// }
 
-			// if 'license_urls' doesn't exist, copy github 'HTML_url' in 'license_url'
-			// ------------------------------------------------------------------------
-			if (!addon.license_url) {
-				addon.license_url = addon.html_url;
-			}
+			
 
 			// Adding github issues url
 			// ------------------------------------------------------------------------
@@ -378,10 +390,14 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 					switch(addon.branchs.__ENTITIES[i].branch){
                     case $scope.branch:
 						addon.hash = addon.branchs.__ENTITIES[i].sha;
+				        addon.github_url = addon.license_url.replace(/\/tree\/.*/,"/tree/" + $scope.branch);
+						addon.license_url = addon.github_url;
 						go = true;
                         break;
 					case "master":
 					    addon.hash = addon.branchs.__ENTITIES[i].sha;
+						addon.github_url = addon.license_url.replace(/\/tree\/.*/,"/tree/master");
+						addon.license_url = addon.github_url;
 						break;
 					default:
 					    break;
