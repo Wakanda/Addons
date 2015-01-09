@@ -369,12 +369,13 @@ function loadExternalWidget(motherWidget, httpUrls) {
 				}
 				returnvalue = returnvalue && studio.sendCommand('Addons.downloadExt');
 
+				if(studio.extension.storage.getItem('ERROR').match(/found/)) studio.alert('the ' + params.name + ' widget does not exist in GitHub');
 				// }
 			}
 
 		} else {
 
-			var query = WAM_BASE + 'rest/Wam/?$filter="name=' + httpUrls[i] + '"';
+			var query = WAM_BASE + 'rest/Addons/?$filter="name=' + httpUrls[i] + '"';
 
 			var xmlHttp = new studio.XMLHttpRequest();
 
@@ -425,7 +426,7 @@ function loadExternalWidget(motherWidget, httpUrls) {
 					studio.extension.storage.setItem('addonParams', escape(JSON.stringify(dataObj)));
 
 					studio.sendCommand('Addons.check');
-                    
+
 					if ((studio.extension.storage.getItem(dataObj.name) == 'Upgrade') && (studio.confirm("the Widget " + dataObj.name + " already exists in your Project, do you want to override it ?"))) {
 
 						studio.extension.storage.setItem('externals', studio.extension.storage.getItem('externals') + ',' + dataObj.name);
@@ -445,7 +446,7 @@ function loadExternalWidget(motherWidget, httpUrls) {
 				}
 			} else {
 
-				studio.alert('The ' + httpUrls[i] + ' widget does not exist in the wakanda-packages repository');
+				studio.alert('The ' + httpUrls[i] + ' widget does not exist in the wakanda-packages repository.');
 
 			}
 
