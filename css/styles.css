@@ -2582,6 +2582,14 @@ input {
 .studio-ext-addons-results-list .options .update:hover {
     background-color: #f8c573
 }
+.studio-ext-addons-results-list .options .spin {
+    background-image : url(../img/spinner.gif);
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	min-width: 8rem;
+    border: 1px solid #a0bd3a;
+	background-color: #a0bd3a;
+}
 .studio-ext-addons-results-list .options .license {
     border: 1px solid #fcfcfc;
     position: relative;
@@ -2680,3 +2688,4 @@ input {
     border-left: 0.5rem solid transparent;
     border-right: 0.5rem solid transparent
 }
+

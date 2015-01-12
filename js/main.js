@@ -344,28 +344,42 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 		// ------------------------------------------------------------------------
 
 		$scope.addonInstall = function (addon) {
-
+		    
+            addon.status = "spin";
 			studio.extension.storage.setItem('addonParams', escape(JSON.stringify(addon)));
 			studio.extension.storage.setItem('externals', addon.name);
-
-			studio.sendCommand('Addons.downloadExt');
+			// addon.status = "spin";
+			
+            window.setTimeout(function(){ 
+			
+            studio.sendCommand('Addons.downloadExt');
 
 			studio.sendCommand('Addons.check');
-
+			
 			addon.status = studio.extension.storage.getItem(addon.name);
 
 			if (addon.status == "Installed")
 				addon.downloads = addon.downloads + 1;
 
 			checkAddonsStatus();
+			
+			$scope.$apply() ;
 
 			studio.extension.storage.setItem('ERROR', '');
+
+           
+			}, 500);
+			
+			
+
+			
 		}
 
 		$scope.addonUpgrade = function (addon) {
-
+            addon.status = "spin";
 			studio.extension.storage.setItem('addonParams', escape(JSON.stringify(addon)));
 			studio.extension.storage.setItem('externals', addon.name);
+			window.setTimeout(function(){ 
 			studio.sendCommand('Addons.backup');
 			studio.sendCommand('Addons.downloadExt');
 			studio.sendCommand('Addons.check');
@@ -376,8 +390,11 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 				addon.downloads = addon.downloads + 1;
 
 			checkAddonsStatus();
-
+			
+            $scope.$apply();
 			studio.extension.storage.setItem('ERROR', '');
+			
+			}, 500);
 		}
 
 		
