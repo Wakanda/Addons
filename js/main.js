@@ -397,7 +397,13 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 			}, 500);
 		}
 
-		
+		$scope.addonRemove = function (addon) {
+		     
+			studio.extension.storage.setItem('addonParams', escape(JSON.stringify(addon)));
+		    studio.sendCommand("Addons.removeAddon");
+			addon.status = "Install";
+			
+		}
         function changeAddonsHash()  {
 		
 		angular.forEach($scope.addons, function (addon) {

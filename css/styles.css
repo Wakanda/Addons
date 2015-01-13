@@ -2535,7 +2535,14 @@ input {
     font-size: 1rem;
     width: 25rem
 }
-
+.studio-ext-addons-results-list .options .remove {
+    border: 1px solid #fcfcfc;
+    position: relative;
+    -webkit-box-sizing: border-box;
+}
+.studio-ext-addons-results-list .options .remove :hover{
+    background-color: #e74c3c;
+}
 .studio-ext-addons-results-list .options .install {
     min-width: 8rem;
     background-color: #a0bd3a

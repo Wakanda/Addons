@@ -943,3 +943,13 @@ actions.checkForUpdate = function checkForUpdate(message) {
 	// }
   
 };
+
+actions.removeAddon = function removeAddon(){
+
+    var addonName = getAddonParam('name');
+    
+	var addonType = getAddonParam('type');
+
+	Folder(getAddonsRootFolder(addonType).path + addonName).remove();
+	
+}
