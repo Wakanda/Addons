@@ -568,7 +568,7 @@ function loadAddon(addonParams) {
 
 					if ((typeof(httpUrls) != 'undefined')){
 
-						externalstatut = loadExternalWidget(addonParams.name, httpUrls);
+						// externalstatut = loadExternalWidget(addonParams.name, httpUrls);
                     }else{
 					  
 					    if(addonParams.type == "wakanda-widgets"){
@@ -892,55 +892,67 @@ actions.alert = function alert() {
 
 actions.checkForUpdate = function checkForUpdate(message) {
     
-	// if (message.source.data[0].name == "Widgets") {
+	if (message.source.data[0].name == "Widgets") {
+	
+        var branch = (studio.version.split(' ')[0] == "Dev" || studio.version.split(' ')[0] == "0.0.0.0") ? "master" : "WAK" + studio.version.split(' ')[0];
+		
+		var widgets = message.source.data[0].folders;
+		
+		var rootAddonsFolder = getAddonsRootFolder('wakanda-widgets');
+		
+        var query = WAM_BASE + 'rest/Addons/name,branchs?$filter="visible=true"&$top=1000&$expand=branchs';
+		
+		var xmlHttp = new studio.XMLHttpRequest();
+		
+		xmlHttp.open('GET', query);
 
-		// var widgets = message.source.data[0].folders;
-		// var rootAddonsFolder = getAddonsRootFolder('wakanda-widgets');
+		xmlHttp.send();
 
-		//studio.currentSolution.restoreItemsIcon([studio.extension.getFolder().path + "update.png"]);
+		var addonsitems = JSON.parse(xmlHttp.response).__ENTITIES;
+		
+		var indexWidget,item,jsonFile,sha;
            
-		// for (var i = 0; i < widgets.length; i++) {
+		for (var i = 0; i < widgets.length; i++) {
 
-			// var query = WAM_BASE + 'rest/Addons/?$filter="name=' + widgets[i].name + '"';
-			// var xmlHttp = new studio.XMLHttpRequest();
+		
+			indexWidget = findItem(addonsitems,"name",widgets[i].name);
 
-			// xmlHttp.open('GET', query);
+			
 
-			// xmlHttp.send();
+			if (indexWidget != -1 ) {
 
-			// var addonsitems = JSON.parse(xmlHttp.response).__ENTITIES;
-
-			// if (addonsitems.length > 0) {
-
-				// item = addonsitems[0];
+				item = addonsitems[indexWidget];
                 
-				// var jsonFile = File(rootAddonsFolder.path + item.name + '/package.json');
+				jsonFile = File(rootAddonsFolder.path + item.name + '/package.json');
 
-				// try {
+				try {
 
-					// var parsed;
+					var parsed;
 
-					// parsed = (jsonFile.exists) ? JSON.parse(jsonFile) : {};
+					parsed = (jsonFile.exists) ? JSON.parse(jsonFile) : {};
 
-				// } catch (e) {
+				} catch (e) {
 
-					// studio.alert('Add-on ' + item.name + ' has an invalid package.json.');
+					studio.alert('Add-on ' + item.name + ' has an invalid package.json.');
 
-				// }
-
-				// if (item.sha != parsed.hash){
+				}
+                sha = findItem(item.branchs.__ENTITIES,"branch",branch);
+				
+				if(sha == -1) sha = findItem(item.branchs.__ENTITIES,"branch","master");
+				
+				if (item.branchs.__ENTITIES[sha].sha != parsed.hash){
 				    
-				    // studio.setCommandWarning( "Addons.showDialog", true );
-					// return;
-				// }
+				    studio.setCommandWarning( "Addons.showDialog", true );
+					return;
+				}
 					
 
-			// }
+			}
 
-		// }
+		}
 	
-        // studio.setCommandWarning( "Addons.showDialog", false ); 
-	// }
+        studio.setCommandWarning( "Addons.showDialog", false ); 
+	}
   
 };
 
@@ -952,4 +964,13 @@ actions.removeAddon = function removeAddon(){
 
 	Folder(getAddonsRootFolder(addonType).path + addonName).remove();
 	
+}
+
+function findItem(arr, key, value) {
+		for (var i = 0; i < arr.length; i++) {
+			if (arr[i][key] === value) {
+				return (i);
+			}
+		}
+		return -1;
 }

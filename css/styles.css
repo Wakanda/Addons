@@ -2208,7 +2208,8 @@ input {
     -moz-osx-font-smoothing: grayscale;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
-    font-family: sans-serif
+    font-family: sans-serif;
+	text-align: center;
 }
 
 .button:hover {
@@ -2443,7 +2444,7 @@ input {
     position: relative;
     margin: 0 1rem;
     -moz-box-sizing: border-box;
-    box-sizing: border-box
+    box-sizing: border-box;l
 }
 
 .studio-ext-addons-results-list {
@@ -2534,14 +2535,6 @@ input {
     vertical-align: middle;
     font-size: 1rem;
     width: 25rem
-}
-.studio-ext-addons-results-list .options .remove {
-    border: 1px solid #fcfcfc;
-    position: relative;
-    -webkit-box-sizing: border-box;
-}
-.studio-ext-addons-results-list .options .remove :hover{
-    background-color: #e74c3c;
 }
 .studio-ext-addons-results-list .options .install {
     min-width: 8rem;
@@ -2663,6 +2656,30 @@ input {
 .studio-ext-addons-results-list .options .bug:hover .tooltip {
     display: block
 }
+.studio-ext-addons-results-list .options .remove {
+    border: 1px solid #c0c0c0;
+	background-color: #F4F4F4;
+	color: #c0c0c0;
+    position: relative;
+    -webkit-box-sizing: border-box;
+}
+.studio-ext-addons-results-list .options .remove:hover{
+    color: #e74c3c;
+	border-color: #e74c3c;
+}
+
+.studio-ext-addons-results-list .options .remove .tooltip {
+    background-color: #e74c3c
+}
+
+.studio-ext-addons-results-list .options .remove .tooltip:after {
+    border-top-color: #e74c3c
+}
+
+.studio-ext-addons-results-list .options .remove:hover .tooltip {
+    display: block
+}
+
 
 .studio-ext-addons-results-list .options .tooltip {
     text-align: center;
@@ -2672,13 +2689,14 @@ input {
     content: attr(title);
     position: absolute;
     top: -2.2rem;
-    left: 0;
+    width: 150%;
+    margin-left: -75%;
     padding: 0.4rem 0.5rem;
     color: white;
     border-radius: 4px;
     z-index: 9;
     display: none;
-    white-space: nowrap
+    white-space: nowrap;
 }
 
 .studio-ext-addons-results-list .options .tooltip:after {

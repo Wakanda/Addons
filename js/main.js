@@ -101,17 +101,17 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 			$scope.sortOrder = true;
 
 	});
-	
+
 	// ------------------------------------------------------------------------
 	// > Split description from version info
 	// ------------------------------------------------------------------------
-    $scope.mySplit = function(s, nb) {
-	
-         $scope.array = s.split('<br>');
-	
-         return $scope.result = $scope.array[nb];
-	
-    }
+	$scope.mySplit = function (s, nb) {
+
+		$scope.array = s.split('<br>');
+
+		return $scope.result = $scope.array[nb];
+
+	}
 	// ------------------------------------------------------------------------
 	// > ADD CUSTOM REPO
 	// ------------------------------------------------------------------------
@@ -173,213 +173,294 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 	// > GET ALL ADDONS (using AddonsRest Service)
 	// ------------------------------------------------------------------------
 
-	AddonsRest.getAddons.get().$promise.then(function (data) {
+	function callWam() {
+		AddonsRest.getAddons.get().$promise.then(function (data) {
 
-		// For each addon add 'license_url' & 'issues_url' if dont exist
-		angular.forEach(data.__ENTITIES, function (addon) {
+			// For each addon add 'license_url' & 'issues_url' if dont exist
+			angular.forEach(data.__ENTITIES, function (addon) {
 
-			// Rename fha to hash
-			// if ($scope.branch == "master") {
+				// Rename fha to hash
+				// if ($scope.branch == "master") {
 				// addon.hash = addon.sha;
-			// } else {
-			    var go = false;
+				// } else {
+				var go = false;
 				for (var i = 0; i < addon.branchs.__ENTITIES.length; i++) {
-					switch(addon.branchs.__ENTITIES[i].branch){
-                    case $scope.branch:
+					switch (addon.branchs.__ENTITIES[i].branch) {
+					case $scope.branch:
 						addon.hash = addon.branchs.__ENTITIES[i].sha;
 						// if 'license_urls' doesn't exist, copy github 'HTML_url' in 'license_url'
-			// ------------------------------------------------------------------------
-			            addon.github_url = addon.html_url.replace(/\/tree\/.*/,"/tree/" + $scope.branch);
-			            if (!addon.license_url) {
-				            addon.license_url = addon.github_url;
-			            }
+						// ------------------------------------------------------------------------
+						addon.github_url = addon.html_url.replace(/\/tree\/.*/, "/tree/" + $scope.branch);
+						if (!addon.license_url) {
+							addon.license_url = addon.github_url;
+						}
 						go = true;
-                        break;
+						break;
 					case "master":
-					    addon.hash = addon.branchs.__ENTITIES[i].sha;
+						addon.hash = addon.branchs.__ENTITIES[i].sha;
 						// if 'license_urls' doesn't exist, copy github 'HTML_url' in 'license_url'
-			// ------------------------------------------------------------------------
-			            addon.github_url = addon.html_url.replace(/\/tree\/.*/,"/tree/master");
-			            if (!addon.license_url) {
-				            addon.license_url = addon.github_url;
-			            }
+						// ------------------------------------------------------------------------
+						addon.github_url = addon.html_url.replace(/\/tree\/.*/, "/tree/master");
+						if (!addon.license_url) {
+							addon.license_url = addon.github_url;
+						}
 						break;
 					default:
-					    break;
+						break;
 					}
-                    if(go) break;
+					if (go)
+						break;
 				}
 
-			// }
+				// }
 
-			
 
-			// Adding github issues url
-			// ------------------------------------------------------------------------
-			var issuesArray = addon.html_url.split('/');
-			var finalUrl = '';
+				// Adding github issues url
+				// ------------------------------------------------------------------------
+				var issuesArray = addon.html_url.split('/');
+				var finalUrl = '';
 
-			for (i = 0; i < 5; i++) {
-				finalUrl += issuesArray[i] + '/';
-			}
+				for (i = 0; i < 5; i++) {
+					finalUrl += issuesArray[i] + '/';
+				}
 
-			finalUrl = finalUrl + '/issues/';
-			addon.github_issues_url = finalUrl;
+				finalUrl = finalUrl + '/issues/';
+				addon.github_issues_url = finalUrl;
 
-			// Adding github githubID
-			addon.githubID = issuesArray[3]
+				// Adding github githubID
+				addon.githubID = issuesArray[3]
 
-		});
-
-		// Stock current tab addons
-		$scope.addons = $filter('filter')(data.__ENTITIES, {
-				type : $scope.tabNav
-		
 			});
 
-		// Handle tab change event and refresh addons list
-		$scope.$watch('tabNav', function (selectedTab) {
-			$scope.addons = $filter('filter')(data.__ENTITIES, {
-					type : selectedTab
-				});
-		    changeAddonsHash();
-			checkAddonsStatus();
-
-		});
-
-		$scope.$watch('branch', function (version) {
+			// Stock current tab addons
 			$scope.addons = $filter('filter')(data.__ENTITIES, {
 					type : $scope.tabNav
+
 				});
-            changeAddonsHash();
-			checkAddonsStatus();
 
-		});
+			// Handle tab change event and refresh addons list
+			$scope.$watch('tabNav', function (selectedTab) {
+				$scope.addons = $filter('filter')(data.__ENTITIES, {
+						type : selectedTab
+					});
+				// if(selectedTab == "wakanda-widgets")
+				// $scope.category = "Wakanda";
+				
+				$scope.searchTerm = "";
+				changeAddonsHash();
+				checkAddonsStatus();
+				
 
-		// Log
-		console.group('All ' + $scope.tabNavName + ' from REST API in the selected tab category');
-		console.log($scope.addons.length);
-		console.log($scope.addons);
-		console.groupEnd();
-
-		// ------------------------------------------------------------------------
-		// > GENERATE PROJECT DROPDOWN
-		// ------------------------------------------------------------------------
-
-		$scope.projectsList = [];
-
-		angular.forEach($scope.solutionInfos.solution.projects, function (value, key) {
-
-			$scope.projectsList.push({
-				"nameNoExt" : value.nameNoExt,
-				"path" : value.parent.path,
-				"disable" : false
 			});
+
+			$scope.$watch('branch', function (version) {
+				$scope.addons = $filter('filter')(data.__ENTITIES, {
+						type : $scope.tabNav
+					});
+				changeAddonsHash();
+				checkAddonsStatus();
+
+			});
+			
+			// $scope.$watch('category', function (selectedCategory) {
+				// $scope.addons = $filter('filter')(data.__ENTITIES, {
+						// type : $scope.tabNav
+					// });
+				// changeAddonsHash();
+				// checkAddonsStatus();
+
+			// });
+
+			// Log
+			console.group('All ' + $scope.tabNavName + ' from REST API in the selected tab category');
+			console.log($scope.addons.length);
+			console.log($scope.addons);
+			console.groupEnd();
+
+			// Initial check for installed addons for the default selected project
+			checkAddonsStatus();
+			$scope.loaded = true;
+
+		}, function (e) {
+
+			// Error while accessing addons service
+			console.log('I cant access the addon list :(');
+
+			$scope.addons = [{
+					"name" : 'The Add-ons server cannot be reached. You may  <button ng-click="addCustomRepo();" class="button">add your library manually</button> or try again later.'
+				}
+			];
+
+			console.log($scope.addons);
+
 		});
+		// End Service Call
+	}
+
+	callWam();
+	// ------------------------------------------------------------------------
+	// > GENERATE PROJECT DROPDOWN
+	// ------------------------------------------------------------------------
+
+	$scope.projectsList = [];
+
+	angular.forEach($scope.solutionInfos.solution.projects, function (value, key) {
 
 		$scope.projectsList.push({
-			"nameNoExt" : '- - - - - - - - - - - - - -',
-			"path" : 'line',
-			"disable" : true
-		}, {
-			"nameNoExt" : 'Favorites',
-			"path" : 'Favorites',
+			"nameNoExt" : value.nameNoExt,
+			"path" : value.parent.path,
 			"disable" : false
 		});
+	});
+	
+    $scope.projectsList = $scope.projectsList.sort(function(a,b){
+	
+	return a.nameNoExt.localeCompare(b.nameNoExt);
+	
+	});
+	
+	$scope.projectsList.push({
+		"nameNoExt" : '- - - - - - - - - - - - - -',
+		"path" : 'line',
+		"disable" : true
+	}, {
+		"nameNoExt" : 'Favorites',
+		"path" : 'Favorites',
+		"disable" : false
+	});
 
-		// Set the selected project to 'first one'
-		$scope.currentProject = $scope.projectsList[0].path;
-		studio.extension.storage.setItem('projectpath', $scope.projectsList[0].path);
+	// Set the selected project to 'first one'
+	$scope.currentProject = $scope.projectsList[0].path;
+	studio.extension.storage.setItem('projectpath', $scope.projectsList[0].path);
 
-		// Reset the selected project to 'first one' when changing tab to wakanda-modules
-		$scope.$watch('tabNav', function () {
-			if ($scope.tabNav === 'wakanda-modules' && $scope.currentProject === 'Favorites') {
-				$scope.currentProject = $scope.projectsList[0].path;
-				studio.extension.storage.setItem('projectpath', $scope.projectsList[0].path);
+	// Reset the selected project to 'first one' when changing tab to wakanda-modules
+	$scope.$watch('tabNav', function () {
+		if ($scope.tabNav === 'wakanda-modules' && $scope.currentProject === 'Favorites') {
+			$scope.currentProject = $scope.projectsList[0].path;
+			studio.extension.storage.setItem('projectpath', $scope.projectsList[0].path);
+		}
+	});
+
+	// ------------------------------------------------------------------------
+	// > CHECK ADDON STATUS (install, installed, update, ...)
+	// ------------------------------------------------------------------------
+	function checkAddonsStatus() {
+
+		angular.forEach($scope.addons, function (addon) {
+			// Set Error Item to void string
+			studio.extension.storage.setItem('ERROR', '');
+
+			studio.extension.storage.setItem('addonParams', escape(JSON.stringify(addon)));
+			studio.sendCommand('Addons.check');
+			if (studio.extension.storage.getItem('ERROR') === '' || studio.extension.storage.getItem('ERROR') === 'ok') {
+
+				addon.status = studio.extension.storage.getItem(addon.name);
+			} else {
+				addon.status = 'reboot';
 			}
 		});
+	}
+	function changeAddonsHash() {
 
-		// Initial check for installed addons for the default selected project
-		checkAddonsStatus();
+		angular.forEach($scope.addons, function (addon) {
+			var go = false;
+			for (var i = 0; i < addon.branchs.__ENTITIES.length; i++) {
 
-		// ------------------------------------------------------------------------
-		// > On Change of Project dropdown
-		// ------------------------------------------------------------------------
+				switch (addon.branchs.__ENTITIES[i].branch) {
+				case $scope.branch:
+					addon.hash = addon.branchs.__ENTITIES[i].sha;
+					addon.github_url = addon.license_url.replace(/\/tree\/.*/, "/tree/" + $scope.branch);
+					addon.license_url = addon.github_url;
+					go = true;
+					break;
+				case "master":
+					addon.hash = addon.branchs.__ENTITIES[i].sha;
+					addon.github_url = addon.license_url.replace(/\/tree\/.*/, "/tree/master");
+					addon.license_url = addon.github_url;
+					break;
+				default:
+					break;
+				}
+				if (go)
+					break;
+			}
 
-		$scope.changeCurrentProject = function (project) {
+		});
+	}
 
-			studio.extension.storage.setItem('projectpath', project);
-
-			console.log('project changed to' + project);
-			console.log('Check all addons');
-
-			checkAddonsStatus();
-
-			console.log(studio.extension.storage);
-			console.log(project);
+	function findItem(arr, key, value) {
+		for (var i = 0; i < arr.length; i++) {
+			if (arr[i][key] === value) {
+				return (i);
+			}
 		}
+		return -1;
+	}
+	// ------------------------------------------------------------------------
+	// > BUTTONS ACTIONS
+	// ------------------------------------------------------------------------
 
-		// ------------------------------------------------------------------------
-		// > RATING SYSTEM
-		// ------------------------------------------------------------------------
-		$scope.rateAddon = function (note, addon) {
-			console.log('Yeah ' + note + ' stars for:');
-			console.log(addon);
-
-			// Record score in local addons object
-			addon.stars = note;
+	$scope.addonInstall = function (addon, dependencies) {
+        if(addon != null){
+		addon.status = "spin";
+		studio.extension.storage.setItem('addonParams', escape(JSON.stringify(addon)));
+		studio.extension.storage.setItem('externals', addon.name);
 		}
+		// addon.status = "spin";
 
-		// ---------------------------------------------------------------------------------------
-		// > custom filter to filter addons while searching just by name , description or owner
-		// ---------------------------------------------------------------------------------------
+		window.setTimeout(function () {
+            if(addon != null){
+			console.log(addon.name);
 
-
-		$scope.addonContainsSearchTerm = function (addon) {
-			var txt = $scope.searchTerm.toLowerCase();
-			return $scope.searchTerm.length == 0 || addon.name.toLowerCase().indexOf(txt) >= 0 || (addon.description != null && addon.description.toLowerCase().indexOf(txt) >= 0) || (addon.owner != null && addon.owner.toLowerCase().indexOf(txt) >= 0);
-		}
-		// ------------------------------------------------------------------------
-		// > BUTTONS ACTIONS
-		// ------------------------------------------------------------------------
-
-		$scope.addonInstall = function (addon) {
-		    
-            addon.status = "spin";
-			studio.extension.storage.setItem('addonParams', escape(JSON.stringify(addon)));
-			studio.extension.storage.setItem('externals', addon.name);
-			// addon.status = "spin";
-			
-            window.setTimeout(function(){ 
-			
-            studio.sendCommand('Addons.downloadExt');
+			studio.sendCommand('Addons.downloadExt');
 
 			studio.sendCommand('Addons.check');
-			
-			addon.status = studio.extension.storage.getItem(addon.name);
 
+			addon.status = studio.extension.storage.getItem(addon.name);
+			console.log(addon.status);
 			if (addon.status == "Installed")
 				addon.downloads = addon.downloads + 1;
 
-			checkAddonsStatus();
-			
-			$scope.$apply() ;
+			// checkAddonsStatus();
+
+			$scope.$apply();
 
 			studio.extension.storage.setItem('ERROR', '');
+            }
+			var newdependencies = dependencies.concat([]);
 
-           
-			}, 500);
-			
-			
+			var newaddon;
+			if(newdependencies.length > 0) {
 
-			
-		}
+				newaddon = $scope.addons[findItem($scope.addons, "name", newdependencies.splice(0, 1)[0].name)];
+				newdependencies = newdependencies.concat(newaddon.dependencies.__ENTITIES);
+				switch (newaddon.status) {
+				case 'Install':
+					$scope.addonInstall(newaddon, newdependencies);
+					break;
+				case 'Upgrade':
+				    if(window.confirm("the " + newaddon.name + " widget already exists in your project. Do you want to override it?")){
+					$scope.addonUpgrade(newaddon, newdependencies);
+					} else {
+					$scope.addonInstall(null, newdependencies);
+					}
+					break;
+				default:
+				    $scope.addonInstall(null, newdependencies);
 
-		$scope.addonUpgrade = function (addon) {
-            addon.status = "spin";
-			studio.extension.storage.setItem('addonParams', escape(JSON.stringify(addon)));
-			studio.extension.storage.setItem('externals', addon.name);
-			window.setTimeout(function(){ 
+				}
+				$scope.$apply();
+			}
+
+		}, 500);
+
+	}
+
+	$scope.addonUpgrade = function (addon, dependencies) {
+		addon.status = "spin";
+		studio.extension.storage.setItem('addonParams', escape(JSON.stringify(addon)));
+		studio.extension.storage.setItem('externals', addon.name);
+		window.setTimeout(function () {
 			studio.sendCommand('Addons.backup');
 			studio.sendCommand('Addons.downloadExt');
 			studio.sendCommand('Addons.check');
@@ -389,83 +470,65 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 			if (addon.status == "Installed")
 				addon.downloads = addon.downloads + 1;
 
-			checkAddonsStatus();
-			
-            $scope.$apply();
+			$scope.$apply();
 			studio.extension.storage.setItem('ERROR', '');
-			
-			}, 500);
-		}
+			var newdependencies = dependencies.concat([]);
+			var newaddon;
+			if (newdependencies.length > 0) {
 
-		$scope.addonRemove = function (addon) {
-		     
-			studio.extension.storage.setItem('addonParams', escape(JSON.stringify(addon)));
-		    studio.sendCommand("Addons.removeAddon");
-			addon.status = "Install";
-			
-		}
-        function changeAddonsHash()  {
-		
-		angular.forEach($scope.addons, function (addon) {
-		var go = false;
-		for (var i = 0; i < addon.branchs.__ENTITIES.length; i++) {
-		            
-					switch(addon.branchs.__ENTITIES[i].branch){
-                    case $scope.branch:
-						addon.hash = addon.branchs.__ENTITIES[i].sha;
-				        addon.github_url = addon.license_url.replace(/\/tree\/.*/,"/tree/" + $scope.branch);
-						addon.license_url = addon.github_url;
-						go = true;
-                        break;
-					case "master":
-					    addon.hash = addon.branchs.__ENTITIES[i].sha;
-						addon.github_url = addon.license_url.replace(/\/tree\/.*/,"/tree/master");
-						addon.license_url = addon.github_url;
-						break;
-					default:
-					    break;
+				newaddon = $scope.addons[findItem($scope.addons, "name", newdependencies.splice(0, 1)[0].name)];
+				newdependencies = newdependencies.concat(newaddon.dependencies.__ENTITIES);
+				switch (newaddon.status) {
+				case 'Install':
+					$scope.addonInstall(newaddon, newdependencies);
+					break;
+				case 'Upgrade':
+					if(window.confirm("the " + newaddon.name + " widget already exists in your project. Do you want to override it?")){
+					$scope.addonUpgrade(newaddon, newdependencies);
+					} else {
+					$scope.addonInstall(null, newdependencies);
 					}
-                    if(go) break;
+					break;
+				default:
+				    $scope.addonInstall(null, newdependencies);
+					
 				}
-		
-		
-		});
-		}
-		// ------------------------------------------------------------------------
-		// > CHECK ADDON STATUS (install, installed, update, ...)
-		// ------------------------------------------------------------------------
-		function checkAddonsStatus() {
-
-			angular.forEach($scope.addons, function (addon) {
-				// Set Error Item to void string
-				studio.extension.storage.setItem('ERROR', '');
-
-				studio.extension.storage.setItem('addonParams', escape(JSON.stringify(addon)));
-				studio.sendCommand('Addons.check');
-				if (studio.extension.storage.getItem('ERROR') === '' || studio.extension.storage.getItem('ERROR') === 'ok') {
-
-					addon.status = studio.extension.storage.getItem(addon.name);
-				} else {
-					addon.status = 'reboot';
-				}
-			});
-		}
-
-	}, function (e) {
-
-		// Error while accessing addons service
-		console.log('I cant access the addon list :(');
-
-		$scope.addons = [{
-				"name" : 'The Add-ons server cannot be reached. You may  <button ng-click="addCustomRepo();" class="button">add your library manually</button> or try again later.'
+              $scope.$apply();
 			}
-		];
 
-		console.log($scope.addons);
+		}, 500);
+	}
+	$scope.reloadTab = function () {
+		$scope.loaded = false;
+		window.setTimeout(
+			callWam,
+			0);
 
-	});
-	// End Service Call
+	}
+	$scope.addonRemove = function (addon) {
 
+		studio.extension.storage.setItem('addonParams', escape(JSON.stringify(addon)));
+		studio.sendCommand("Addons.removeAddon");
+		addon.status = "Install";
+
+	}
+
+	// ------------------------------------------------------------------------
+	// > On Change of Project dropdown
+	// ------------------------------------------------------------------------
+
+	$scope.changeCurrentProject = function (project) {
+
+		studio.extension.storage.setItem('projectpath', project);
+
+		console.log('project changed to' + project);
+		console.log('Check all addons');
+
+		checkAddonsStatus();
+
+		console.log(studio.extension.storage);
+		console.log(project);
+	}
 
 	// ---------------------------------------------
 	// > OPEN URL IN BROWSER
@@ -475,17 +538,37 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 		window.open(url, '_blank');
 	}
 
+	// ------------------------------------------------------------------------
+	// > RATING SYSTEM
+	// ------------------------------------------------------------------------
+	$scope.rateAddon = function (note, addon) {
+		console.log('Yeah ' + note + ' stars for:');
+		console.log(addon);
+
+		// Record score in local addons object
+		addon.stars = note;
+	}
+	// ---------------------------------------------------------------------------------------
+	// > custom filter to filter addons while searching just by name , description or owner
+	// ---------------------------------------------------------------------------------------
+
+
+	$scope.addonContainsSearchTerm = function (addon) {
+		var txt = $scope.searchTerm.toLowerCase();
+		return ($scope.searchTerm.length == 0 || addon.name.toLowerCase().indexOf(txt) >= 0 || (addon.description != null && addon.description.toLowerCase().indexOf(txt) >= 0) || (addon.owner != null && addon.owner.toLowerCase().indexOf(txt) >= 0)); /*&& ((addon.type != 'wakanda-widgets')||(addon.category == $scope.category)) ;*/
+	}
+
 	// ---------------------------------------------
 	// > TOOLTIPS
 	// ---------------------------------------------
-	$('.tooltip').each(function (index, el) {
-        debugger;
-		var elWidth = $(el).outerWidth();
-		var btnWidth = 26 ;//$(el).parent().outerWidth();
-		var newLeft = (btnWidth / 2) - (elWidth / 2);
+	// $('.tooltip').each(function (index, el) {
+		
+		// var elWidth = $(el).width() - 6 ;
+		// var btnWidth = $(el).parent().width() + 6;
+		// var newLeft =  btnWidth - elWidth ;
 
-		$(el).css('left', newLeft);
-	});
+		// $(el).css('left', newLeft/2 );
+	// });
 
 });
 
@@ -502,10 +585,10 @@ angular.module('AddonsRest', ['ngResource'])
 			// var branchFilter = "";
 			// branch="WAK9";
 			// if (branch != "master") {
-				// branchFilter = '&$expand=branchs&$filter="branchs.branch="' + branch + '""';
+			// branchFilter = '&$expand=branchs&$filter="branchs.branch="' + branch + '""';
 			// }
 			return {
-				getAddons : $resource('http://addons.wakanda.org/rest/Addons/?&$top=1000&$expand=branchs')
+				getAddons : $resource('http://addons.wakanda.org/rest/Addons/?&$top=1000&$expand=branchs,dependencies')
 			}
 
 		}
