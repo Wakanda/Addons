@@ -2537,7 +2537,7 @@ input {
     width: 25rem
 }
 .studio-ext-addons-results-list .options .install {
-    min-width: 8rem;
+    min-width: 9.5rem;
     background-color: #a0bd3a
 }
 
@@ -2546,7 +2546,7 @@ input {
 }
 
 .studio-ext-addons-results-list .options .success {
-    min-width: 8rem;
+    min-width: 9.5rem;
     border: 1px solid #a0bd3a;
     color: #a0bd3a;
     background-color: transparent;
@@ -2554,7 +2554,7 @@ input {
 }
 
 .studio-ext-addons-results-list .options .error {
-    min-width: 8rem;
+    min-width: 9.5rem;
     background-color: #e74c3c;
     border: 1px solid #e74c3c
 }
@@ -2564,7 +2564,7 @@ input {
 }
 
 .studio-ext-addons-results-list .options .restart {
-    min-width: 8rem;
+    min-width: 9.5rem;
     background-color: #e74c3c;
     border: 1px solid #e74c3c
 }
@@ -2574,7 +2574,7 @@ input {
 }
 
 .studio-ext-addons-results-list .options .update {
-    min-width: 8rem;
+    min-width: 9.5rem;
     background-color: #f39c12;
     border: 1px solid #f39c12
 }
@@ -2586,7 +2586,7 @@ input {
     background-image : url(../img/spinner.gif);
 	background-position: 50% 50%;
 	background-repeat: no-repeat;
-	min-width: 8rem;
+	min-width: 9.5rem;
     border: 1px solid #a0bd3a;
 	background-color: #a0bd3a;
 }

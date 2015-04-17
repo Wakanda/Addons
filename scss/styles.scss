@@ -406,7 +406,7 @@ input{
  	// 		}
 		// }
 		.install{
-			min-width: 8rem;
+			min-width: 9.5rem;
 			background-color: #a0bd3a;
 
 			&:hover{
@@ -414,14 +414,14 @@ input{
 			}
 		}
 		.success{
-			min-width: 8rem;
+			min-width: 9.5rem;
 			border: 1px solid #a0bd3a;
 			color: #a0bd3a;
 			background-color: transparent;
 			cursor: default;
 		}
 		.error{
-			min-width: 8rem;
+			min-width: 9.5rem;
 			background-color: #e74c3c;
 			border: 1px solid #e74c3c;
 
@@ -430,7 +430,7 @@ input{
 			}
 		}
 		.restart{
-			min-width: 8rem;
+			min-width: 9.5rem;
 			background-color: #e74c3c;
 			border: 1px solid #e74c3c;
 
@@ -439,7 +439,7 @@ input{
 			}
 		}
 		.update{
-			min-width: 8rem;
+			min-width: 9.5rem;
 			background-color: #f39c12;
 			border: 1px solid #f39c12;
 
