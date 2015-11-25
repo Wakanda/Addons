@@ -1,1 +1,335 @@
-<!DOCTYPE html><html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"><head>	<title>Wakanda Studion Add-ons</title>	<meta name="viewport" content="width=device-width, initial-scale=1.0">	<meta charset="UTF-8" />	<meta name="google" content="notranslate">	<meta http-equiv="Content-Language" content="en" />	<link href="css/styles.css" rel="stylesheet" media="print, screen">	<style>		.close {			position: absolute;			top: 5px;			right: 5px;		}	</style></head><body class="studio-ext-addons" ng-app="addonsApp" ng-controller="addonsCtrl">		<header class="studio-ext-addons-header">				<h1 class="studio-ext-addons-title"><img src="img/logo-addon.png" alt=""> Wakanda <span ng-if="solutionInfos.studio.isEnterprise">Enterprise </span>Studio Add-ons</h1>				<!-- BRANCH SELECTION -->		<!--<div class="studio-branch">			<label for="">Branch</label>			<select name="" id="" ng-model="branch">				<option value="WAK9">Wakanda 9</option>				<option value="WAK10">Wakanda 10</option>				<option value="master">Wakanda Main</option>			</select>			<i class="fa fa-caret-down"></i>		</div> -->		<!-- TAB NAVIGATION -->		<nav class="studio-ext-addons-nav">			<ul class="wakRepo">				<li id="wakanda-widgets" ng-class="{selected: tabNav == 'wakanda-widgets'}" ng-show="solutionInfos.solution.projects.length > 0">					<a ng-click="tabNav = 'wakanda-widgets'"><img src="./img/widgets.png" /> Widgets</a>				</li>				<li id="wakanda-themes" ng-class="{selected: tabNav == 'wakanda-themes'}" ng-show="solutionInfos.solution.projects.length > 0">					<a ng-click="tabNav = 'wakanda-themes'"><img src="./img/themes.png" /> Themes</a>				</li>								<li id="wakanda-extensions" ng-class="{selected: tabNav == 'wakanda-extensions'}">					<a ng-click="tabNav = 'wakanda-extensions'"><img src="./img/extensions.png" /> Extensions</a>				</li>								<li id="wakanda-modules" ng-class="{selected: tabNav == 'wakanda-modules'}" ng-show="solutionInfos.solution.projects.length > 0">					<a ng-click="tabNav = 'wakanda-modules'"><img src="./img/modules.png" /> Modules</a>				</li>				<!--  <li id="wakandadb-drivers"><a href="#">Drivers</a></li> -->			</ul>		</nav>				<ul class="studio-project">						<!-- PROJECTS LIST DROPDOWN -->			<li ng-show="solutionInfos.solution.projects.length > 0 && tabNav != 'wakanda-extensions'">				<label for="projectsList"><i class="fa fa-folder {{tabNavName}}"></i> Location</label>				<select id="projectsList" ng-model="currentProject" ng-change="changeCurrentProject(currentProject)">										<option value="{{project.path}}" ng-repeat="project in projectsList" ng-disabled="project.disable">{{project.nameNoExt}}</option>								</select>								<i class="fa fa-caret-down"></i>			</li>						<!-- ADD FROM AN EXTERNAL REPO -->			<li>				<a ng-click="addCustomRepo();">					<i class="fa fa-plus-square {{tabNavName}}"></i> Import a repository via a URL				</a>			</li>			<!-- Relaod a tab  -->				<span ng-model="loaded" ng-init="loaded = false;" style="float:right; margin-right:20px">                 <a  ng-click="reloadTab();" ng-if="loaded">			         Refresh list				     <i class="fa fa-refresh {{tabNavName}}"></i>			         			     </a>			     <a  ng-if="!loaded">			         Refreshing				     <i class="fa fa-spinner {{tabNavName}}"></i>			          			      </a>		    </span>		</ul>				<!-- FILTERS -->		<ul class="studio-ext-addons-filters">			<!-- PAGINATION -->			<li>				<dir-pagination-controls max-size="5"></dir-pagination-controls>			</li>            			<!-- NUMBER OF ADDONS AVAILABLE -->			<li class="filters-number">				<span id='items-found-number' class='items-found'>					<span ng-if="(addons|filter: addonContainsSearchTerm | filter: {visible : true}).length != (addons | filter: {visible : true} ).length">{{(addons|filter: addonContainsSearchTerm | filter: {visible : true}).length}} out of</span> {{(addons | filter: {visible : true}).length}} {{tabNavName}} 				</span>			</li>			<!-- SORTING -->			<li class="filters-sort">				<label for="sort">Sort by 					<select name="sort" id="sort" ng-model="sortFilter">					    <option value="name">Name</option>						<option value="updated_at">Date</option>						<option value="downloads">Downloads</option>						<option value="owner">Developer</option>						<option value="status == 'Installed'">Installed</option>						<option value="status == 'Upgrade'">To Upgrade</option>						<option value="status == 'Install' || status == null">To Install</option>						<!--<option value="stars">Stars</option>-->					</select>					<i class="fa fa-caret-down"></i>				</label>				<span ng-show="sortFilter == 'updated_at' || sortFilter == 'downloads' || sortFilter == 'owner' || sortFilter == 'name'">					<a class="sort-order-btn" ng-click="sortOrder = !sortOrder" ng-hide="sortOrder">						Asc <i class="fa fa-caret-up"></i>					</a>					<a class="sort-order-btn" ng-click="sortOrder = !sortOrder" ng-show="sortOrder">						Desc <i class="fa fa-caret-down"></i>					</a>				</span>			</li>			<!-- SEARCH INPUT -->			<li class="filters-search">				<form class="search-form">					<span class="as-searchInput">						<i class="fa fa-search"></i>						<input id="searchField" type="search" placeholder="Search" ng-model="searchTerm" />					</span>				</form>			</li>					</ul>	</header>	<main id="body" class="studio-ext-addons-content">	        <!--<nav class="widget-category-nav" ng-show="tabNav == 'wakanda-widgets'">			<ul class="wakRepo">				<li id="wakanda" ng-class="{selected: category== 'Wakanda'}" >					<a ng-click="category = 'Wakanda'"> Wakanda </a>				</li>				<li id="custom-widget" ng-class="{selected: category == 'Custom Widgets'}" >					<a ng-click="category = 'Custom Widgets'"> Custom Widget </a>				</li>								<li id="kendo-widget" ng-class="{selected: category == 'Kendo Widgets'}">					<a ng-click="category = 'Kendo Widgets'"> Kendo Widget </a>				</li>								<li id="other" ng-class="{selected: category == 'Others'}">					<a ng-click="category = 'Others'"> Others </a>				</li>							</ul>		</nav>--->		<div class="studio-ext-addons-results">			<!-- ADDONS LIST -->						<ul class="studio-ext-addons-results-list" id="contentList">				<!-- ADDON ITEM -->				<li	dir-paginate="addon in addons | filter: addonContainsSearchTerm | filter: {visible : true} | orderBy: sortFilter:sortOrder | itemsPerPage: 7">										<div class="studio-ext-addons-infos" >														<!-- NAME & DATE -->							<h2>							<img ng-show = "addon.icon_uri"  ng-src={{addon.icon_uri}}  style="width : 15px ; height : 15px;"/>							<img ng-hide = "addon.icon_uri"  ng-src= {{"./img/"+tabNavName+".png"}}  style="width : 15px ; height : 15px;"/>														{{addon.name}} <span class="date">- {{addon.updated_at | date: 'MM/dd/yyyy'}} </span>														<!-- RATE SYSTEM							<span class="rate">								<span ng-click="rateAddon(5, addon)" ng-class="{colored: addon.stars == 5}">★</span>								<span ng-click="rateAddon(4, addon)" ng-class="{colored: addon.stars == 4 || addon.stars == 5}">★</span>								<span ng-click="rateAddon(3, addon)" ng-class="{colored: addon.stars == 3 || addon.stars == 4 || addon.stars == 5}">★</span>								<span ng-click="rateAddon(2, addon)" ng-class="{colored: addon.stars == 2 || addon.stars == 3 || addon.stars == 4 || addon.stars == 5}">★</span>								<span ng-click="rateAddon(1, addon)" ng-class="{colored: addon.stars == 1 || addon.stars == 2 || addon.stars == 3 || addon.stars == 4 || addon.stars == 5}">★</span>							</span>							 -->							<!-- NB OF DOWNLOAD -->							<span class="downloadnumber">{{addon.downloads}}  downloads							</span>							</h2>							<!-- DESCRIPTION & AUTHOR -->							<p>{{mySplit(addon.description,0)}}							     <p ng-if="addon.dependencies.__ENTITIES.length>0">							     Dependencies: 							          <span ng-repeat = "dependency in addon.dependencies.__ENTITIES">									  <span ng-hide="$last">									  {{dependency.name}},									  </span>									  <span ng-show="$last && addon.dependencies.__ENTITIES.length>1" >									  and {{dependency.name}}									  </span>									  <span ng-show="$last && addon.dependencies.__ENTITIES.length == 1" >									  {{dependency.name}}									  </span>									  </span>							      </p>							      {{mySplit(addon.description,1)}} <span class="author">- by {{addon.owner}}</span>								  							</p>													</div>						<!-- BUTTONS -->						<div class="options">						    							<!-- INSTALL BTN -->							<button class="button install" data-key="" ng-click="addonInstall(addon,addon.dependencies.__ENTITIES)" ng-if="addon.status == null || addon.status == 'Install'"><i class="fa fa-download"></i> Install</button>							<!-- INSTALLED -->							<button class="button success" data-key="" ng-if="addon.status == 'Installed'" disabled><i class="fa fa-check"></i> Installed</button>														<!-- UPDATE BTN -->							<button class="button update" data-key="" ng-click="addonUpgrade(addon,addon.dependencies.__ENTITIES)" ng-if="addon.status == 'Upgrade'"><i class="fa fa-refresh"></i> Upgrade</button>														<!-- ERROR/RETRY BTN -->							<button class="button error" data-key="" ng-click="addonRetry()" ng-if="addon.status == 'error'"><i class="fa fa-ban"></i> Error/Retry</button>							<!-- NEED TO RESTART -->							<button class="button reboot" data-key="" ng-if="addon.status == 'reboot' || addon.status == 'Restart'" disabled><i class="fa fa-cogs"></i> Restart studio</button>							<button class="button spin" ng-if="addon.status == 'spin'"></button>							<!-- LICENSE BTN -->							<!-- If having license -->							<button class="button license" data-key="" ng-if="addon.license" ng-click="openUrlInBrowser(addon.license_url)">								<i class="fa fa-copyright"></i>								<div class="tooltip">{{addon.license}}</div>							</button>							<!-- If not --><!-- 							<button class="button license" ng-if="!addon.license" disabled>								N/A								<div class="tooltip">License</div>							</button>  -->														<!-- GITHUB BTN -->							<button class="button github infos" data-key="" ng-click="openUrlInBrowser(addon.github_url)">								<i class="fa fa-github"></i>								<div class="tooltip" >Github</div>							</button>							<!-- GITHUB ISSUES BTN -->							<button class="button bug" ng-click="openUrlInBrowser(addon.github_issues_url)">								<i class="fa fa-bug"></i>								<div class="tooltip" >Issues</div>							</button>														<!-- Move To Trash BTN -->							<button class="button remove" ng-if="addon.status == 'Installed' || addon.status == 'Upgrade'"  ng-click="addonRemove(addon)">								<i class="fa fa-trash"></i>								<div class="tooltip" >Remove</div>							</button>						</div>					</div>			    </li>		    </ul>		</div>	</main>		<script src="lib/jquery-2.0.3.min.js"></script>	<script src="js/xml2json.js"></script>	<script src="bower_components/angular/angular.js"></script>	<script src="bower_components/angular-resource/angular-resource.js"></script>	<script src="bower_components/angular-utils-pagination/dirPagination.js"></script>	<script src="js/main.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>Wakanda Studion Add-ons</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="google" content="notranslate">
+    <meta http-equiv="Content-Language" content="en" />
+    <link href="css/styles.css" rel="stylesheet" media="print, screen">
+    <link href="lib/style/freeow/freeow.css" rel="stylesheet" media="print , screen">
+    <link href="lib/jquery.confirm/jquery.confirm.css" rel="stylesheet" media="print , screen">
+
+
+    <script src="pace/pace.js"></script>
+    <link href="pace/pace.css" rel='stylesheet' />
+    <style>
+        .close {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+        }
+    </style>
+</head>
+
+<body class="studio-ext-addons" ng-app="addonsApp" ng-controller="addonsCtrl">
+
+
+
+    <header class="studio-ext-addons-header">
+        <div id="freeow" class="freeow freeow-top-right"></div>
+        <h1 class="studio-ext-addons-title"><img src="img/logo-addon.png" alt=""> Wakanda <span ng-if="solutionInfos.studio.isEnterprise">Enterprise </span>Studio Add-ons</h1>
+
+        <!-- BRANCH SELECTION -->
+        <!--<div class="studio-branch">
+			<label for="">Branch</label>
+			<select name="" id="" ng-model="branch">
+				<option value="WAK9">Wakanda 9</option>
+				<option value="WAK10">Wakanda 10</option>
+				<option value="master">Wakanda Main</option>
+			</select>
+			<i class="fa fa-caret-down"></i>
+		</div> -->
+
+        <!-- TAB NAVIGATION -->
+        <nav class="studio-ext-addons-nav">
+            <ul class="wakRepo">
+                <li id="wakanda-extensions" ng-class="{selected: tabNav == 'wakanda-extensions'}">
+                    <a ng-click="tabNav = 'wakanda-extensions'"><img src="./img/extensions.png" /> Extensions</a>
+                </li>
+                <li id="wakanda-modules" ng-class="{selected: tabNav == 'wakanda-modules'}" ng-show="solutionInfos.solution.projects.length > 0">
+                    <a ng-click="tabNav = 'wakanda-modules'"><img src="./img/modules.png" /> Modules</a>
+                </li>
+                <li id="wakanda-widgets" ng-class="{selected: tabNav == 'wakanda-widgets'}" ng-show="solutionInfos.solution.projects.length > 0">
+                    <a ng-click="tabNav = 'wakanda-widgets'"><img src="./img/widgets.png" /> Widgets</a>
+                </li>
+                <li id="wakanda-themes" ng-class="{selected: tabNav == 'wakanda-themes'}" ng-show="solutionInfos.solution.projects.length > 0">
+                    <a ng-click="tabNav = 'wakanda-themes'"><img src="./img/themes.png" /> Themes</a>
+                </li>
+
+
+
+                <!--  <li id="wakandadb-drivers"><a href="#">Drivers</a></li> -->
+            </ul>
+        </nav>
+
+
+
+
+        <ul class="studio-project">
+
+            <!-- PROJECTS LIST DROPDOWN -->
+            <li ng-show="solutionInfos.solution.projects.length > 0 && tabNav != 'wakanda-extensions'">
+                <label for="projectsList"><i class="fa fa-folder {{tabNavName}}"></i> Location</label>
+
+                <select id="projectsList" ng-model="currentProject" ng-change="changeCurrentProject(currentProject)">
+
+                    <option value="{{project.path}}" ng-repeat="project in projectsList" ng-disabled="project.disable">{{project.nameNoExt}}</option>
+
+                </select>
+
+                <i class="fa fa-caret-down"></i>
+            </li>
+
+            <!-- ADD FROM AN EXTERNAL REPO -->
+            <li>
+                <a ng-click="addCustomRepo();">
+                    <i class="fa fa-plus-square {{tabNavName}}"></i> Import a repository via a URL
+                </a>
+            </li>
+
+            <div class="checkbox" ng-show="tabNav == 'wakanda-extensions'" style="float:left ">
+                <label>
+                    <input type="checkbox" ng-value="onlyInternal" ng-model="onlyInternal"> show me only internal extensions </label>
+            </div>
+
+            <!-- Relaod a tab  -->
+            <span ng-model="loaded" ng-init="loaded = false;" style="float:right; margin-right:20px">
+                 <a  ng-click="reloadTab();" ng-if="loaded">
+			         Refresh list
+				     <i class="fa fa-refresh {{tabNavName}}"></i>
+			         
+			     </a>
+		    </span>
+        </ul>
+
+
+
+
+
+        <!-- FILTERS -->
+        <ul class="studio-ext-addons-filters">
+
+            <!-- PAGINATION -->
+            <li>
+                <dir-pagination-controls max-size="5"></dir-pagination-controls>
+            </li>
+
+            <!-- NUMBER OF ADDONS AVAILABLE -->
+            <li class="filters-number">
+                <span id='items-found-number' class='items-found'>
+					<span ng-if="(addons | filter: addonContainsSearchTerm | filter: {visible : true}).length != (addons | filter: {visible : true} ).length">{{(addons|filter: addonContainsSearchTerm | filter: {visible : true}).length}} out of</span> {{(addons | filter: {visible : true}).length}} {{tabNavName}}
+                </span>
+            </li>
+
+            <!-- UPDATE BTN -->
+            <button class="button update" ng-if="somethingToUpdate" ng-click="upgradeAll()"><i class="fa fa-refresh"></i> Upgrade all {{tabNavName}}</button>
+
+            <!-- SORTING -->
+            <li class="filters-sort">
+                <label for="sort">Sort by
+                    <select name="sort" id="sort" ng-model="sortFilter">
+                        <option value="name">Name</option>
+                        <option value="updated_at">Date</option>
+                        <option value="downloads">Downloads</option>
+                        <option value="owner">Developer</option>
+                        <option value="status == 'Installed'">Installed</option>
+                        <option value="status == 'Upgrade' || status == 'spin'">To Upgrade</option>
+                        <option value="status == 'Install' || status == null || status == 'spin'">To Install</option>
+                        <!--<option value="stars">Stars</option>-->
+                    </select>
+                    <i class="fa fa-caret-down"></i>
+                </label>
+
+                <span ng-show="sortFilter == 'updated_at' || sortFilter == 'downloads' || sortFilter == 'owner' || sortFilter == 'name'">
+					<a class="sort-order-btn" ng-click="sortOrder = !sortOrder" ng-hide="sortOrder">
+						Asc <i class="fa fa-caret-up"></i>
+					</a>
+					<a class="sort-order-btn" ng-click="sortOrder = !sortOrder" ng-show="sortOrder">
+						Desc <i class="fa fa-caret-down"></i>
+					</a>
+				</span>
+
+            </li>
+
+            <!-- SEARCH INPUT -->
+            <li class="filters-search">
+                <form class="search-form">
+                    <span class="as-searchInput">
+						<i class="fa fa-search"></i>
+						<input id="searchField" type="search" placeholder="Search" ng-model="searchTerm" />
+					</span>
+                </form>
+            </li>
+
+
+        </ul>
+
+    </header>
+
+
+
+
+    <main id="body" class="studio-ext-addons-content">
+
+        <!--<nav class="widget-category-nav" ng-show="tabNav == 'wakanda-widgets'">
+			<ul class="wakRepo">
+				<li id="wakanda" ng-class="{selected: category== 'Wakanda'}" >
+					<a ng-click="category = 'Wakanda'"> Wakanda </a>
+				</li>
+				<li id="custom-widget" ng-class="{selected: category == 'Custom Widgets'}" >
+					<a ng-click="category = 'Custom Widgets'"> Custom Widget </a>
+				</li>				
+				<li id="kendo-widget" ng-class="{selected: category == 'Kendo Widgets'}">
+					<a ng-click="category = 'Kendo Widgets'"> Kendo Widget </a>
+				</li>
+				
+				<li id="other" ng-class="{selected: category == 'Others'}">
+					<a ng-click="category = 'Others'"> Others </a>
+				</li>
+				
+			</ul>
+		</nav>--->
+        <div class="studio-ext-addons-results">
+
+            <!-- ADDONS LIST -->
+            <ul class="studio-ext-addons-results-list" id="contentList" ng-if="!error">
+
+                <!-- ADDON ITEM -->
+                <li dir-paginate="addon in addons | filter: addonContainsSearchTerm | filter: {visible : true} | orderBy: sortFilter:sortOrder | itemsPerPage: 7">
+
+                    <div class="studio-ext-addons-infos">
+
+                        <!-- NAME & DATE -->
+                        <h2>
+							<img ng-show = "addon.icon_uri"  ng-src={{addon.icon_uri}}  style="width : 15px ; height : 15px;"/>
+							<img ng-hide = "addon.icon_uri"  ng-src= {{"./img/"+tabNavName+".png"}}  style="width : 15px ; height : 15px;"/>
+							
+							{{addon.name}} <span class="version" ng-if="addon.version!=''&& addon.version != null">v.{{addon.version}}</span>    
+                            <span class="date"> {{addon.updated_at | date: 'MM/dd/yyyy'}} </span>
+							
+							<!-- RATE SYSTEM
+							<span class="rate">
+								<span ng-click="rateAddon(5, addon)" ng-class="{colored: addon.stars == 5}">★</span>
+								<span ng-click="rateAddon(4, addon)" ng-class="{colored: addon.stars == 4 || addon.stars == 5}">★</span>
+								<span ng-click="rateAddon(3, addon)" ng-class="{colored: addon.stars == 3 || addon.stars == 4 || addon.stars == 5}">★</span>
+								<span ng-click="rateAddon(2, addon)" ng-class="{colored: addon.stars == 2 || addon.stars == 3 || addon.stars == 4 || addon.stars == 5}">★</span>
+								<span ng-click="rateAddon(1, addon)" ng-class="{colored: addon.stars == 1 || addon.stars == 2 || addon.stars == 3 || addon.stars == 4 || addon.stars == 5}">★</span>
+							</span>
+							 -->
+							<!-- NB OF DOWNLOAD -->
+							<span class="downloadnumber">{{addon.downloads}}  <i class="fa fa-cloud-download"></i> 
+							</span>
+                            <div  class="wakandabadge"  ng-if="addon.type == 'wakanda-internal-extensions'">
+                            <div class ="label">
+                                 </div><div class="text">wakanda internal extension</div>
+                            </div>   
+							</h2>
+
+                        <!-- DESCRIPTION & AUTHOR -->
+                        <p>{{mySplit(addon.description,0)}}
+                            <p ng-if="addon.keywords !=''&& addon.keywords != null">
+                                Keywords: {{addon.keywords}}
+                            </p>
+                            <p ng-if="addon.dependencies.__ENTITIES.length>0">
+                                Dependencies:
+                                <span ng-repeat="dependency in addon.dependencies.__ENTITIES">
+									  <span ng-hide="$last">
+									  {{dependency.name}},
+									  </span>
+                                <span ng-show="$last && addon.dependencies.__ENTITIES.length>1">
+									  and {{dependency.name}}
+									  </span>
+                                <span ng-show="$last && addon.dependencies.__ENTITIES.length == 1">
+									  {{dependency.name}}
+									  </span>
+                                </span>
+                            </p>
+                            {{mySplit(addon.description,1)}} <span class="author">- by {{addon.owner}}</span>
+
+                        </p>
+
+                    </div>
+
+                    <!-- BUTTONS -->
+                    <div class="options">
+
+                        <!-- INSTALL BTN -->
+                        <button class="button install" data-key="" ng-click="addonInstall(addon,addon.dependencies.__ENTITIES)" ng-if="addon.status == null || addon.status == 'Install'"><i class="fa fa-download"></i> Install</button>
+
+                        <!-- INSTALLED -->
+                        <button class="button success" data-key="" ng-if="addon.status == 'Installed'" disabled><i class="fa fa-check"></i> Installed</button>
+
+                        <!-- UPDATE BTN -->
+                        <button class="button update" data-key="" ng-click="addonUpgrade(addon,addon.dependencies.__ENTITIES)" ng-if="addon.status == 'Upgrade'"><i class="fa fa-refresh"></i> Upgrade</button>
+
+                        <!-- ERROR/RETRY BTN -->
+                        <button class="button error" data-key="" ng-click="addonRetry()" ng-if="addon.status == 'error'"><i class="fa fa-ban"></i> Error/Retry</button>
+
+                        <!-- NEED TO RESTART -->
+                        <button class="button reboot" data-key="" ng-if="addon.status == 'reboot' || addon.status == 'Restart'" disabled><i class="fa fa-cogs"></i> Restart studio</button>
+                        <button class="button spin" ng-if="addon.status == 'spin'"></button>
+
+                        <!-- LICENSE BTN -->
+                        <!-- If having license -->
+                        <button class="button license" data-key="" ng-if="addon.license" ng-click="openUrlInBrowser(addon.license_url)">
+                            <i class="fa fa-copyright"></i>
+                            <div class="tooltip">{{addon.license}}</div>
+                        </button>
+                        <!-- If not -->
+                        <!-- 
+							<button class="button license" ng-if="!addon.license" disabled>
+								N/A
+								<div class="tooltip">License</div>
+							</button>  -->
+
+                        <!-- GITHUB BTN -->
+                        <button class="button github infos" data-key="" ng-click="openUrlInBrowser(addon.github_url)">
+                            <i class="fa fa-github"></i>
+                            <div class="tooltip">Github</div>
+                        </button>
+
+                        <!-- GITHUB ISSUES BTN -->
+                        <button class="button bug" ng-click="openUrlInBrowser(addon.github_issues_url)">
+                            <i class="fa fa-bug"></i>
+                            <div class="tooltip">Issues</div>
+                        </button>
+
+                        <!-- Move To Trash BTN -->
+                        <button class="button remove" ng-if="addon.status == 'Installed' || addon.status == 'Upgrade'" ng-click="addonRemove(addon)">
+                            <i class="fa fa-trash"></i>
+                            <div class="tooltip">Remove</div>
+                        </button>
+                    </div>
+
+        </div>
+        </li>
+
+        </ul>
+        <div ng-if="error" style="position: relative;top: 50px;">The Add-ons server cannot be reached. You may
+            <button ng-click="addCustomRepo();" class="button ">add your library manually</button> or try again later</div>
+        </div>
+    </main>
+
+
+
+    <script src="lib/jquery-2.0.3.min.js"></script>
+    <script src="lib/jquery.freeow.min.js"></script>
+    <script src="lib/jquery.confirm/jquery.confirm.js"></script>
+    <script src="js/xml2json.js"></script>
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-resource/angular-resource.js"></script>
+    <script src="bower_components/angular-utils-pagination/dirPagination.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        window.setInterval(function () {
+            if (studio.extension.storage.getItem("reload") == "OK") {
+                document.location.reload();
+                studio.extension.storage.setItem("reload", "NOK")
+            }
+        }, 1000)
+    </script>
+</body>
+
+</html>

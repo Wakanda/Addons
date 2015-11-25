@@ -4,20 +4,22 @@
         "version": "0.1.0",
         "description": "Download Wakanda Add-ons",
         "icon": "icon.png",
-        "senders": [
-            {
-                "location": "studioToolbar",
-                "icon": "icon.png",
-                "actionName": "showDialog",
-                "tips": "Download Wakanda Add-ons",
-                    }
-        ],
-        "actions": [
-            {
-                "name": "showDialog",
-                "title": "Add-ons"				
-             },			 {                "name": "checkForUpdate",                "title": "Check For Update",								"trigger": [							{ "event": "onFolderExpanded" }						]				             }
-        ],
+        "actions": [{
+            "name": "showDialog",
+            "title": "Add-ons"
+        }, {
+            "name": "reloadTab",
+            "title": "reload Tab",
+            "trigger": [{
+                "event": "onSolutionOpened"
+            }]
+        }, {
+            "name": "checkForExtensionsUpdate",
+            "title": "check For Extensions Update",
+            "trigger": [{
+                "event": "onStudioStart"
+            }]
+        }],
         "lifetime": "application_lifetime"
     }
 }
