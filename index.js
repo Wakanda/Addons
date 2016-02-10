@@ -932,6 +932,7 @@ actions.checkForUpdate = function checkForUpdate(message) {
         var addonsitems = JSON.parse(xmlHttp.response).__ENTITIES;
 
         var indexWidget, item, jsonFile, sha;
+        var nbUpdates = 0;
 
         for (var i = 0; i < widgets.length; i++) {
 
@@ -962,18 +963,17 @@ actions.checkForUpdate = function checkForUpdate(message) {
                 if (sha == -1) sha = findItem(item.branchs.__ENTITIES, "branch", "master");
 
                 if (item.branchs.__ENTITIES[sha].sha != parsed.hash) {
-
-                    studio.setCommandWarning("Addons.showDialog", true);
-
-                    return;
+                    nbUpdates++;
                 }
-
 
             }
 
         }
 
-        studio.setCommandWarning("Addons.showDialog", false);
+        if ( nbUpdates > 0)
+            studio.setCommandWarning("Addons.showDialog", true, nbUpdates );
+        else
+            studio.setCommandWarning("Addons.showDialog", false);
     }
 
 };
@@ -1009,7 +1009,7 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
 
     try {
 
-
+        var numberOfUpdate = 0;
         var branch = (studio.version.split(' ')[0] == "Dev" || studio.version.split(' ')[0] == "0.0.0.0") ? "master" : "WAK" + studio.version.split(' ')[0];
 
         //golobal extensions
@@ -1066,9 +1066,7 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
 
                 if (item.branchs.__ENTITIES[sha].sha != parsed.hash) {
 
-                    studio.setCommandWarning("Addons.showDialog", true);
-
-                    return;
+                    numberOfUpdate++;
                 }
 
 
@@ -1108,17 +1106,19 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
 
                 if (item.branchs.__ENTITIES[sha].sha != parsed.hash) {
 
-                    studio.setCommandWarning("Addons.showDialog", true);
-
-                    return;
+                    numberOfUpdate++;
                 }
 
 
             }
 
         }
-
-        studio.setCommandWarning("Addons.showDialog", false);
+        if (numberOfUpdate == 0) {
+            studio.setCommandWarning("Addons.showDialog", false);
+        } else {
+            studio.showMessageOnStatusBar(numberOfUpdate + " updates ready to install", "error");
+            studio.setCommandWarning("Addons.showDialog", true, numberOfUpdate);
+        }
     } catch (e) {
 
     };
