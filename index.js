@@ -191,6 +191,7 @@ function validateAddonVersionEligibility(addon, version) {
 }
 
 function findItem(arr, key, value) {
+    if (!arr) return -1;
     for (var i = 0; i < arr.length; i++) {
         if (arr[i][key] === value) {
             return (i);
