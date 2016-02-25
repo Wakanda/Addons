@@ -58,7 +58,7 @@ var WAM_BASE = 'http://addons.wakanda.org/';
 
  */
 
-actions = {};
+var actions = {};
 
 /**
 
@@ -73,6 +73,139 @@ actions = {};
  */
 
 var DEBUGMODE = false;
+
+
+// retro-compatibility with WAK < 1.1.0
+function getStudioVersionObject (studioVersion, buildNumber) {
+    var studioVersionObject = {};
+
+    if (typeof studioVersion === 'string') {
+        // old isEnterprise call
+        if (studio.isEnterprise) {
+            studioVersionObject.isEnterprise = true;
+        } else {
+            studioVersionObject.isEnterprise = false;
+        }
+
+        // old dev versions
+        if (studioVersion == "Dev" || studioVersion == "0.0.0.0") {
+            studioVersionObject.isDev = true;
+        } else {
+            studioVersionObject.isDev = false;
+        }
+
+        var studioVersionStringArray = [];
+        if (buildNumber.length > 0) {
+            studioVersionStringArray = buildNumber.split('.');
+        } else {
+            var studioVersionSplit = studioVersion.split(' ');
+            studioVersionStringArray = studioVersionSplit[2].split('.');
+        }
+
+        // all WAK < 1.1.0 are labeled with old Wakanda versioning. From 1 to 11, converted logically in 0.1 to 0.11
+        studioVersionObject.major = 0;
+        // 0.0.0.0 are dev version, they are converted to 0.11
+        if (studioVersionObject == "0.0.0.0") {
+            studioVersionObject.minor = 11;
+            studioVersionObject.patch = 0;
+        } else {
+            studioVersionObject.minor = studioVersionStringArray[0];
+            studioVersionObject.patch = studioVersionStringArray[1];
+        }
+
+        studioVersionObject.full = [
+            studioVersionObject.major,
+            studioVersionObject.minor,
+            studioVersionObject.patch
+        ].join('.');
+
+    } else if (typeof studioVersion === 'object') {
+        studioVersionObject = studioVersion;
+    }
+
+    return studioVersionObject;
+}
+
+function compareVersions(shouldBeSmaller, shouldBeHigher) {
+    switch(shouldBeSmaller.length) {
+        case 3:
+            if (shouldBeHigher[0] > shouldBeSmaller[0]) {
+                return true;
+            } else if (shouldBeHigher[0] == shouldBeSmaller[0]) {
+                if (shouldBeHigher[1] > shouldBeSmaller[1]) {
+                    return true;
+                } else if (shouldBeHigher[1] == shouldBeSmaller[1]) {
+                    if (shouldBeHigher[2] >= shouldBeSmaller[2]) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+            break;
+        case 2:
+            if (shouldBeHigher[0] > shouldBeSmaller[0]) {
+                return true;
+            } else if (shouldBeHigher[0] == shouldBeSmaller[0]) {
+                if (shouldBeHigher[1] >= shouldBeSmaller[1]) {
+                    return true;
+                }
+            }
+            return false;
+            break;
+        case 1:
+            if (shouldBeHigher[0] >= shouldBeSmaller[0]) {
+                return true;
+            }
+            return false;
+            break;
+        default:
+            return true;
+            break;
+    }
+    return true;
+}
+
+function validateAddonVersionEligibility(addon, version) {
+    var studioVersionArray = [
+        parseInt(version.major),
+        parseInt(version.minor),
+        parseInt(version.patch)
+    ];
+    var check = true;
+
+    if (addon.minStudioVersion) {
+        var addonMinVersionArray = addon.minStudioVersion.split('.').map(function(val) {
+            return parseInt(val);
+        });
+        check = compareVersions(addonMinVersionArray, studioVersionArray);
+    }
+
+    if (check && addon.maxStudioVersion) {
+        var addonMaxVersionArray = addon.maxStudioVersion.split('.').map(function(val) {
+            return parseInt(val);
+        });
+        check = compareVersions(studioVersionArray, addonMaxVersionArray);
+    }
+
+    return check;
+}
+
+function findItem(arr, key, value) {
+    for (var i = 0; i < arr.length; i++) {
+        if (arr[i][key] === value) {
+            return (i);
+        }
+    }
+    return -1;
+}
+
+function findShaByBranch(branches, branchName) {
+    var sha = findItem(branches, "branch", branchName);
+    if (sha == -1) {
+        sha = findItem(branches, "branch", "master");
+    }
+    return sha;
+}
 
 /**
 
@@ -325,7 +458,6 @@ function getAddonsRootFolder(addonType) {
 
     }
 
-    // studio.alert(rootAddonsFolder.path);
     return rootAddonsFolder;
 
 }
@@ -576,7 +708,7 @@ function loadAddon(addonParams) {
 
                     if (addonParams.type.indexOf('extension') != -1) {
 
-                        isUpgrade = studio.extension.storage.getItem(addonParams.name) == "Upgrade";
+                        var isUpgrade = studio.extension.storage.getItem(addonParams.name) == "Upgrade";
                         studio.extension.storage.setItem(addonParams.name, 'Restart');
                         if (isUpgrade) {
 
@@ -719,6 +851,7 @@ actions.backup = function backup() {
  */
 
 actions.check = function check() {
+    var rootAddonsFolder = '';
 
     var pluginName = getAddonParam('name');
 
@@ -729,11 +862,9 @@ actions.check = function check() {
     var fisrtCheck = studio.extension.storage.getItem('fisrtCheck');
 
     if (pluginType == "wakanda-internal-extensions" && fisrtCheck) {
-
-        var rootAddonsFolder = getAddonsRootFolder("wakanda-extensions");
+        rootAddonsFolder = getAddonsRootFolder("wakanda-extensions");
     } else {
-
-        var rootAddonsFolder = getAddonsRootFolder(pluginType);
+        rootAddonsFolder = getAddonsRootFolder(pluginType);
     }
 
     if (!Folder(rootAddonsFolder.path + pluginName).exists) {
@@ -754,9 +885,10 @@ actions.check = function check() {
 
         var jsonFile = File(rootAddonsFolder.path + pluginName + '/package.json');
 
+        var parsed = {};
+
         try {
 
-            var parsed;
 
             parsed = (jsonFile.exists) ? JSON.parse(jsonFile) : {};
 
@@ -806,7 +938,7 @@ actions.downloadExt = function downloadExt(message) {
 
 
     if (typeof message !== 'undefined' && typeof message.params !== 'undefined') {
-        studio.extension.storage.setItem('addonParams', JSON.stringify(message.params))
+        studio.extension.storage.setItem('addonParams', JSON.stringify(message.params));
         if (typeof message.params.projectpath !== 'undefined') {
             studio.extension.storage.setItem('projectpath', message.params.projectpath);
         }
@@ -814,9 +946,9 @@ actions.downloadExt = function downloadExt(message) {
 
     var addonParams = JSON.parse(unescape(studio.extension.storage.getItem('addonParams')));
 
-    var pluginName = getAddonParam('name');
+    // var pluginName = getAddonParam('name');
 
-    var pluginType = getAddonParam('type');
+    // var pluginType = getAddonParam('type');
 
 
     return loadAddon(addonParams);
@@ -824,8 +956,6 @@ actions.downloadExt = function downloadExt(message) {
 };
 
 exports.handleMessage = function handleMessage(message) {
-
-    'use strict';
 
     var actionName;
 
@@ -857,9 +987,6 @@ exports.handleMessage = function handleMessage(message) {
 
 actions.showDialog = function showDialog() {
 
-    'use strict';
-
-
     studio.extension.storage.setItem("reload", "NOK");
 
     studio.extension.storage.setItem('defaultTab', 'wakanda-extensions');
@@ -881,8 +1008,6 @@ actions.showDialog = function showDialog() {
 };
 
 actions.showThemesDialog = function showThemesDialog() {
-
-    'use strict';
 
     studio.extension.storage.setItem('defaultTab', 'wakanda-themes');
 
@@ -906,22 +1031,26 @@ actions.alert = function alert() {
     studio.extension.storage.setItem('alertMessage', '');
 
 };
-actions.reloadTab = function reloadTab(message) {
+actions.reloadTab = function reloadTab() {
 
     studio.extension.storage.setItem("reload", "OK");
 
-}
+};
 actions.checkForUpdate = function checkForUpdate(message) {
 
     if (message.source.data[0].name == "Widgets") {
 
-        var branch = (studio.version.split(' ')[0] == "Dev" || studio.version.split(' ')[0] == "0.0.0.0") ? "master" : "WAK" + studio.version.split(' ')[0];
+        var studioVersion = getStudioVersionObject(studio.version, studio.buildNumber);
+        var branch = 'master';
+        if (studioVersion.major < 1) {
+            branch = "WAK" + studioVersion.major;
+        }
 
         var widgets = message.source.data[0].folders;
 
         var rootAddonsFolder = getAddonsRootFolder('wakanda-widgets');
 
-        var query = WAM_BASE + 'rest/Addons/name,branchs?$filter="visible=true"&$top=1000&$expand=branchs';
+        var query = WAM_BASE + 'rest/Addons/name,branchs,minStudioVersion,maxStudioVersion?$filter="visible=true"&$top=1000&$expand=branchs';
 
         var xmlHttp = new studio.XMLHttpRequest();
 
@@ -931,7 +1060,7 @@ actions.checkForUpdate = function checkForUpdate(message) {
 
         var addonsitems = JSON.parse(xmlHttp.response).__ENTITIES;
 
-        var indexWidget, item, jsonFile, sha;
+        var indexWidget, item, jsonFile, sha, eligibleForUpdate;
         var nbUpdates = 0;
 
         for (var i = 0; i < widgets.length; i++) {
@@ -947,9 +1076,9 @@ actions.checkForUpdate = function checkForUpdate(message) {
 
                 jsonFile = File(rootAddonsFolder.path + item.name + '/package.json');
 
-                try {
+                var parsed = {};
 
-                    var parsed;
+                try {
 
                     parsed = (jsonFile.exists) ? JSON.parse(jsonFile) : {};
 
@@ -958,11 +1087,18 @@ actions.checkForUpdate = function checkForUpdate(message) {
                     studio.alert('Add-on ' + item.name + ' has an invalid package.json.');
 
                 }
-                sha = findItem(item.branchs.__ENTITIES, "branch", branch);
 
-                if (sha == -1) sha = findItem(item.branchs.__ENTITIES, "branch", "master");
 
-                if (item.branchs.__ENTITIES[sha].sha != parsed.hash) {
+                eligibleForUpdate = true;
+                // check commit sha differs, otherwise no updates
+                sha = findShaByBranch(item.branchs.__ENTITIES, branch);
+                if (item.branchs.__ENTITIES[sha].sha === parsed.hash) {
+                    eligibleForUpdate = false;
+                } else {
+                    eligibleForUpdate = validateAddonVersionEligibility(item, studioVersion);
+                }
+
+                if (eligibleForUpdate) {
                     nbUpdates++;
                 }
 
@@ -977,7 +1113,6 @@ actions.checkForUpdate = function checkForUpdate(message) {
     }
 
 };
-
 actions.removeAddon = function removeAddon() {
 
     var addonName = getAddonParam('name');
@@ -990,29 +1125,23 @@ actions.removeAddon = function removeAddon() {
 
     Folder(rootAddonsFolder.path + addonName).remove();
 
-}
-
-function findItem(arr, key, value) {
-
-    for (var i = 0; i < arr.length; i++) {
-        if (arr[i][key] === value) {
-            return (i);
-        }
-    }
-    return -1;
-}
+};
 
 
-actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
-
-
+actions.checkForExtensionsUpdate = function checkForExtensionsUpdate() {
 
     try {
 
         var numberOfUpdate = 0;
-        var branch = (studio.version.split(' ')[0] == "Dev" || studio.version.split(' ')[0] == "0.0.0.0") ? "master" : "WAK" + studio.version.split(' ')[0];
 
-        //golobal extensions
+        // branch selection
+        var studioVersion = getStudioVersionObject(studio.version, studio.buildNumber);
+        var branch = 'master';
+        if (studioVersion.major < 1) {
+            branch = "WAK" + studioVersion.major;
+        }
+
+        // global extensions
         var rootAddonsFolder = getAddonsRootFolder('wakanda-extensions');
 
         var globalExtensions = Folder(rootAddonsFolder.path).folders;
@@ -1026,7 +1155,7 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
 
         localExtensions.sort(sortFolderListByCreationDate);
 
-        var query = WAM_BASE + 'rest/Addons/name,type,branchs?$filter="type=\'\*extensions\'"&$top=1000&$expand=branchs';
+        var query = WAM_BASE + 'rest/Addons/name,type,branchs,minStudioVersion,maxStudioVersion?$filter="type=\'\*extensions\'"&$top=1000&$expand=branchs';
 
         var xmlHttp = new studio.XMLHttpRequest();
 
@@ -1036,7 +1165,7 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
 
         var addonsitems = JSON.parse(xmlHttp.response).__ENTITIES;
 
-        var indexWidget, item, jsonFile, sha;
+        var alreadyGlobal, indexExtension, parsed, item, jsonFile, sha, eligibleForUpdate;
 
         for (var i = 0; i < globalExtensions.length; i++) {
 
@@ -1048,10 +1177,9 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
 
                 jsonFile = File(globalExtensions[i].path + 'package.json');
 
+                parsed = {};
 
                 try {
-
-                    var parsed;
 
                     parsed = (jsonFile.exists) ? JSON.parse(jsonFile) : {};
 
@@ -1060,15 +1188,19 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
                     studio.alert('Add-on ' + item.name + ' has an invalid package.json.');
 
                 }
-                sha = findItem(item.branchs.__ENTITIES, "branch", branch);
 
-                if (sha == -1) sha = findItem(item.branchs.__ENTITIES, "branch", "master");
-
-                if (item.branchs.__ENTITIES[sha].sha != parsed.hash) {
-
-                    numberOfUpdate++;
+                eligibleForUpdate = true;
+                // check commit sha differs, otherwise no updates
+                sha = findShaByBranch(item.branchs.__ENTITIES, branch);
+                if (item.branchs.__ENTITIES[sha].sha === parsed.hash) {
+                    eligibleForUpdate = false;
+                } else {
+                    eligibleForUpdate = validateAddonVersionEligibility(item, studioVersion);
                 }
 
+                if (eligibleForUpdate) {
+                    numberOfUpdate++;
+                }
 
             }
 
@@ -1076,7 +1208,7 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
 
 
 
-        for (var i = 0; i < localExtensions.length; i++) {
+        for (i = 0; i < localExtensions.length; i++) {
 
 
             indexExtension = findItem(addonsitems, "name", localExtensions[i].name);
@@ -1089,9 +1221,9 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
 
                 jsonFile = File(localExtensions[i].path + 'package.json');
 
-                try {
+                parsed = {};
 
-                    var parsed;
+                try {
 
                     parsed = (jsonFile.exists) ? JSON.parse(jsonFile) : {};
 
@@ -1100,12 +1232,17 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
                     studio.alert('Add-on ' + item.name + ' has an invalid package.json.');
 
                 }
-                sha = findItem(item.branchs.__ENTITIES, "branch", branch);
 
-                if (sha == -1) sha = findItem(item.branchs.__ENTITIES, "branch", "master");
+                eligibleForUpdate = true;
+                // check commit sha differs, otherwise no updates
+                sha = findShaByBranch(item.branchs.__ENTITIES, branch);
+                if (item.branchs.__ENTITIES[sha].sha == parsed.hash) {
+                    eligibleForUpdate = false;
+                } else {
+                    eligibleForUpdate = validateAddonVersionEligibility(item, studioVersion);
+                }
 
-                if (item.branchs.__ENTITIES[sha].sha != parsed.hash) {
-
+                if (eligibleForUpdate) {
                     numberOfUpdate++;
                 }
 
@@ -1113,6 +1250,7 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
             }
 
         }
+
         if (numberOfUpdate == 0) {
             studio.setCommandWarning("Addons.showDialog", false);
         } else {
@@ -1120,8 +1258,8 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
             studio.setCommandWarning("Addons.showDialog", true, numberOfUpdate);
         }
     } catch (e) {
-
-    };
+        studio.alert(e)
+    }
 
 
 };
