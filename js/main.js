@@ -1,6 +1,5 @@
 var addonsApp = angular.module('addonsApp', ['ngResource', 'AddonsRest', 'angularUtils.directives.dirPagination']).filter('filterWithOr', function ($filter) {
 
-
     var comparator = function (actual, expected) {
         if (angular.isUndefined(actual)) {
             // No substring matching against `undefined`
@@ -72,16 +71,136 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
             "projects": solutionName ? getProjectsFromXML() : '' // if there is an opened solution
         },
         "studio": {
-            "version": studio.version.split(' ')[0],
-            "isEnterprise": studio.isEnterprise
+            "version": studio.version,
+            "isEnterprise": studio.isEnterprise || studio.version.isEnterprise
         }
     };
 
-    $scope.branch = ($scope.solutionInfos.studio.version == "Dev" || $scope.solutionInfos.studio.version == "0.0.0.0") ? "master" : "WAK" + $scope.solutionInfos.studio.version;
-    // $scope.branch  = "WAK9";
-    console.group('Solution Infos');
-    console.log($scope.solutionInfos);
-    console.groupEnd();
+    // call compareVersions to check addon and studio compatibilities
+    function checkAddonVersionCompatibility(addon, studioVersionArray) {
+        var isCompatible = true;
+
+        if (addon.minStudioVersion) {
+            var addonMinVersionArray = addon.minStudioVersion.split('.').map(function(val) {
+                return parseInt(val);
+            });
+            isCompatible = compareVersions(addonMinVersionArray, studioVersionArray);
+        }
+
+        if (isCompatible && addon.maxStudioVersion) {
+            var addonMaxVersionArray = addon.maxStudioVersion.split('.').map(function(val) {
+                return parseInt(val);
+            });
+            isCompatible = compareVersions(studioVersionArray, addonMaxVersionArray);
+        }
+
+        return isCompatible;
+    }
+    
+    // compare two versions arrays
+    function compareVersions(shouldBeSmaller, shouldBeHigher) {
+        switch(shouldBeSmaller.length) {
+            case 3:
+                if (shouldBeHigher[0] > shouldBeSmaller[0]) {
+                    return true;
+                } else if (shouldBeHigher[0] == shouldBeSmaller[0]) {
+                    if (shouldBeHigher[1] > shouldBeSmaller[1]) {
+                        return true;
+                    } else if (shouldBeHigher[1] == shouldBeSmaller[1]) {
+                        if (shouldBeHigher[2] >= shouldBeSmaller[2]) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+                break;
+            case 2:
+                if (shouldBeHigher[0] > shouldBeSmaller[0]) {
+                    return true;
+                } else if (shouldBeHigher[0] == shouldBeSmaller[0]) {
+                    if (shouldBeHigher[1] >= shouldBeSmaller[1]) {
+                        return true;
+                    }
+                }
+                return false;
+                break;
+            case 1:
+                if (shouldBeHigher[0] >= shouldBeSmaller[0]) {
+                    return true;
+                }
+                return false;
+                break;
+            default:
+                return true;
+                break;
+        }
+        return true;
+    }
+
+    // retro-compatibility with WAK < 1.1.0
+    function getStudioVersionObject (studioVersion, buildNumber) {
+        var studioVersionObject = {};
+
+        if (typeof studioVersion === 'string') {
+            // old isEnterprise call
+            if (studio.isEnterprise) {
+                studioVersionObject.isEnterprise = true;
+            } else {
+                studioVersionObject.isEnterprise = false;
+            }
+
+            // old dev versions
+            if (studioVersion == "Dev" || studioVersion == "0.0.0.0") {
+                studioVersionObject.isDev = true;
+            } else {
+                studioVersionObject.isDev = false;
+            }
+
+            var studioVersionStringArray = [];
+            if (buildNumber.length > 0) {
+                studioVersionStringArray = buildNumber.split('.');
+            } else {
+                var studioVersionSplit = studioVersion.split(' ');
+                studioVersionStringArray = studioVersionSplit[2].split('.');
+            }
+
+            // all WAK < 1.1.0 are labeled with old Wakanda versioning. From 1 to 11, converted logically in 0.1 to 0.11
+            studioVersionObject.major = 0;
+            // 0.0.0.0 are dev version, they are converted to 0.11
+            if (studioVersionObject == "0.0.0.0") {
+                studioVersionObject.minor = 11;
+                studioVersionObject.patch = 0;
+            } else {
+                studioVersionObject.minor = studioVersionStringArray[0];
+                studioVersionObject.patch = studioVersionStringArray[1];
+            }
+
+            studioVersionObject.full = [
+                studioVersionObject.major,
+                studioVersionObject.minor,
+                studioVersionObject.patch
+            ].join('.');
+
+        } else if (typeof studioVersion === 'object') {
+            studioVersionObject = studioVersion;
+        }
+
+        return studioVersionObject;
+    }
+    $scope.solutionInfos.studio.version = getStudioVersionObject($scope.solutionInfos.studio.version, studio.buildNumber);
+    $scope.branch = "master";
+    if ($scope.solutionInfos.studio.version.major < 1) {
+        $scope.branch = "WAK" + $scope.solutionInfos.studio.version.minor;
+    }
+    $scope.solutionInfos.studio.version.array = [
+        parseInt($scope.solutionInfos.studio.version.major),
+        parseInt($scope.solutionInfos.studio.version.minor),
+        parseInt($scope.solutionInfos.studio.version.patch)
+    ];
+
+    //console.group('Solution Infos');
+    //console.log($scope.solutionInfos);
+    //console.groupEnd();
 
     studio.extension.storage.setItem('ERROR', '');
 
@@ -199,15 +318,13 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
         studio.sendCommand('Addons.downloadExt');
 
         studio.alert((studio.extension.storage.getItem('ERROR') === 'ok') ? 'The ' + params.name + ' ' + $scope.tabNavName + ' was installed successfully.' : params.name + ' ' + params.type + ' installation failed.');
-        console.log(studio.extension.storage.getItem('ERROR'));
+        //console.log(studio.extension.storage.getItem('ERROR'));
         if ((studio.extension.storage.getItem('ERROR') === 'ok') && (params.type == "wakanda-extensions"))
             $("#freeow").freeow("Installation Info", studio.extension.storage.getItem('alert'), {
                 classes: ["gray", "notice"],
                 autoHide: false
             });
         studio.extension.storage.setItem('ERROR', '');
-
-
 
         return false;
     };
@@ -219,47 +336,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
     function callWam() {
         AddonsRest.getAddons.get().$promise.then(function (data) {
             $scope.error = false;
-            // For each addon add 'license_url' & 'issues_url' if dont exist
             angular.forEach(data.__ENTITIES, function (addon) {
-
-                // Rename fha to hash
-                // if ($scope.branch == "master") {
-                // addon.hash = addon.sha;
-                // } else {
-                var go = false;
-                for (var i = 0; i < addon.branchs.__ENTITIES.length; i++) {
-                    switch (addon.branchs.__ENTITIES[i].branch) {
-                    case $scope.branch:
-                        addon.hash = addon.branchs.__ENTITIES[i].sha;
-                        // if 'license_urls' doesn't exist, copy github 'HTML_url' in 'license_url'
-                        // ------------------------------------------------------------------------
-                        addon.github_url = addon.html_url.replace(/\/tree\/.*/, "/tree/" + $scope.branch);
-                        if (!addon.license_url) {
-                            addon.license_url = addon.github_url;
-                        }
-                        go = true;
-                        break;
-                    case "master":
-                        addon.hash = addon.branchs.__ENTITIES[i].sha;
-                        // if 'license_urls' doesn't exist, copy github 'HTML_url' in 'license_url'
-                        // ------------------------------------------------------------------------
-                        addon.github_url = addon.html_url.replace(/\/tree\/.*/, "/tree/master");
-                        if (!addon.license_url) {
-                            addon.license_url = addon.github_url;
-                        }
-                        break;
-                    default:
-                        break;
-                    }
-                    if (go)
-                        break;
-                }
-
-                // }
-
-
-                // Adding github issues url
-                // ------------------------------------------------------------------------
                 var issuesArray = addon.html_url.split('/');
                 var finalUrl = '';
 
@@ -272,9 +349,10 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 
                 // Adding github githubID
                 addon.githubID = issuesArray[3];
-                if (addon.keywords)
+                if (addon.keywords) {
                     addon.keywords = addon.keywords.replace(/","/g, ', ').replace('["', '').replace('"]', '');
-
+                }
+                addon.isCompatible = checkAddonVersionCompatibility(addon, $scope.solutionInfos.studio.version.array);
             });
 
             // Stock current tab addons
@@ -340,14 +418,14 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
         }, function (e) {
 
             // Error while accessing addons service
-            console.log('I cant access the addon list :(');
+            //console.log('I cant access the addon list :(');
             $scope.error = true;
             $scope.addons = [{
                     "name": 'The Add-ons server cannot be reached. You may  <button ng-click="addCustomRepo();" class="button">add your library manually</button> or try again later.'
-				}
-			];
+                }
+            ];
 
-            console.log(e);
+            //console.log(e);
 
         });
         // End Service Call
@@ -405,7 +483,6 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
         angular.forEach($scope.addons, function (addon) {
             // Set Error Item to void string
             studio.extension.storage.setItem('ERROR', '');
-
             studio.extension.storage.setItem('addonParams', escape(JSON.stringify(addon)));
             studio.extension.storage.setItem('fisrtCheck', true);
             studio.sendCommand('Addons.check');
@@ -419,36 +496,31 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
     }
 
     function changeAddonsHash() {
-
         angular.forEach($scope.addons, function (addon) {
             var go = false;
             for (var i = 0; i < addon.branchs.__ENTITIES.length; i++) {
-
+                addon.hash = addon.branchs.__ENTITIES[i].sha;
+                addon.github_url = addon.html_url.replace(/\/tree\/.*/, "/tree/" + $scope.branch);
+                if (!addon.license_url) {
+                    addon.license_url = addon.github_url;
+                }
                 switch (addon.branchs.__ENTITIES[i].branch) {
                 case $scope.branch:
-                    addon.hash = addon.branchs.__ENTITIES[i].sha;
-                    addon.github_url = addon.license_url.replace(/\/tree\/.*/, "/tree/" + $scope.branch);
-                    addon.license_url = addon.github_url;
-                    go = true;
-                    break;
-                case "master":
-                    addon.hash = addon.branchs.__ENTITIES[i].sha;
-                    addon.github_url = addon.license_url.replace(/\/tree\/.*/, "/tree/master");
-                    addon.license_url = addon.github_url;
+                    go = $scope.branch;
                     break;
                 default:
                     break;
                 }
-                if (go)
+                if (go) {
                     break;
+                }
             }
-
         });
     }
 
     function findItem(arr, key, value) {
         for (var i = 0; i < arr.length; i++) {
-            if (arr[i][key] === value) {
+            if (arr[i][key] === value && arr[i].isCompatible) {
                 return (i);
             }
         }
@@ -459,7 +531,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
     // ------------------------------------------------------------------------
 
     $scope.addonInstall = function (addon, dependencies) {
-        if (addon != null) {
+        if (addon != null && addon.isCompatible) {
             addon.status = "spin";
             studio.extension.storage.setItem('addonParams', escape(JSON.stringify(addon)));
             studio.extension.storage.setItem('externals', addon.name);
@@ -468,15 +540,13 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
         // addon.status = "spin";
 
         window.setTimeout(function () {
-            if (addon != null) {
-                console.log(addon.name);
-
+            if (addon != null && addon.isCompatible) {
                 studio.sendCommand('Addons.downloadExt');
                 studio.extension.storage.setItem('fisrtCheck', true);
                 studio.sendCommand('Addons.check');
 
                 addon.status = studio.extension.storage.getItem(addon.name);
-                console.log(addon.status);
+                
                 if (addon.status == "Installed")
                     addon.downloads = addon.downloads + 1;
 
@@ -537,6 +607,9 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
     };
 
     $scope.addonUpgrade = function (addon, dependencies) {
+        if (!addon.isCompatible) {
+            return false;
+        }
         addon.status = "spin";
         studio.extension.storage.setItem('addonParams', escape(JSON.stringify(addon)));
         studio.extension.storage.setItem('externals', addon.name);
@@ -547,7 +620,6 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
             studio.sendCommand('Addons.check');
 
             addon.status = studio.extension.storage.getItem(addon.name);
-
             if (addon.status == "Installed")
                 addon.downloads = addon.downloads + 1;
 
@@ -566,6 +638,11 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 
                 newaddon = $scope.addons[findItem($scope.addons, "name", newdependencies.splice(0, 1)[0].name)];
                 newdependencies = newdependencies.concat(newaddon.dependencies.__ENTITIES);
+
+                if (!newaddon.isCompatible) {
+                    return false;
+                }
+
                 switch (newaddon.status) {
                 case 'Install':
                     $scope.addonInstall(newaddon, newdependencies);
@@ -611,7 +688,6 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
     };
 
     $scope.upgradeAll = function () {
-
 
         var nextUpdate = findItem($scope.addons, 'status', 'Upgrade');
         $scope.somethingToUpdate = nextUpdate != -1;
@@ -660,13 +736,13 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 
         studio.extension.storage.setItem('projectpath', project);
 
-        console.log('project changed to' + project);
-        console.log('Check all addons');
+        //console.log('project changed to' + project);
+        //console.log('Check all addons');
 
         checkAddonsStatus();
 
-        console.log(studio.extension.storage);
-        console.log(project);
+        //console.log(studio.extension.storage);
+        //console.log(project);
     };
 
     // ---------------------------------------------
@@ -681,8 +757,8 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
     // > RATING SYSTEM
     // ------------------------------------------------------------------------
     $scope.rateAddon = function (note, addon) {
-        console.log('Yeah ' + note + ' stars for:');
-        console.log(addon);
+        //console.log('Yeah ' + note + ' stars for:');
+        //console.log(addon);
 
         // Record score in local addons object
         addon.stars = note;
@@ -720,7 +796,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 
 angular.module('AddonsRest', ['ngResource'])
     .factory('AddonsRest', ['$resource',
-		function ($resource) {
+        function ($resource) {
 
             // var version = studio.version.split(' ')[0];
             // var branch = (version == "Dev" || version == "0.0.0.0") ? "master" : "WAK" + version;
@@ -738,5 +814,5 @@ angular.module('AddonsRest', ['ngResource'])
                 })
             };
 
-		}
-	]);
+        }
+    ]);

@@ -57,9 +57,6 @@
                 <li id="wakanda-themes" ng-class="{selected: tabNav == 'wakanda-themes'}" ng-show="solutionInfos.solution.projects.length > 0">
                     <a ng-click="tabNav = 'wakanda-themes'"><img src="./img/themes.png" /> Themes</a>
                 </li>
-
-
-
                 <!--  <li id="wakandadb-drivers"><a href="#">Drivers</a></li> -->
             </ul>
         </nav>
@@ -119,7 +116,7 @@
             <!-- NUMBER OF ADDONS AVAILABLE -->
             <li class="filters-number">
                 <span id='items-found-number' class='items-found'>
-					<span ng-if="(addons | filter: addonContainsSearchTerm | filter: {visible : true}).length != (addons | filter: {visible : true} ).length">{{(addons|filter: addonContainsSearchTerm | filter: {visible : true}).length}} out of</span> {{(addons | filter: {visible : true}).length}} {{tabNavName}}
+					<span ng-if="(addons | filter: addonContainsSearchTerm | filter: {visible : true, isCompatible : true}).length != (addons | filter: {visible : true, isCompatible : true} ).length">{{(addons|filter: addonContainsSearchTerm | filter: {visible : true, isCompatible : true}).length}} out of</span> {{(addons | filter: {visible : true, isCompatible : true}).length}} {{tabNavName}}
                 </span>
             </li>
 
@@ -197,7 +194,7 @@
             <ul class="studio-ext-addons-results-list" id="contentList" ng-if="!error">
 
                 <!-- ADDON ITEM -->
-                <li dir-paginate="addon in addons | filter: addonContainsSearchTerm | filter: {visible : true} | orderBy: sortFilter:sortOrder | itemsPerPage: 7">
+                <li dir-paginate="addon in addons | filter: addonContainsSearchTerm | filter: {visible : true, isCompatible : true} | orderBy: sortFilter:sortOrder | itemsPerPage: 7">
 
                     <div class="studio-ext-addons-infos">
 
@@ -228,7 +225,10 @@
 							</h2>
 
                         <!-- DESCRIPTION & AUTHOR -->
-                        <p>{{mySplit(addon.description,0)}}
+                        <div class="desc">
+                            <p>
+                            <span ng-if="mySplit(addon.description,0) != ''">{{mySplit(addon.description,0)}}</span><span ng-if="mySplit(addon.description,0) != '' && addon.owner != null"> - </span><span class="author">by {{addon.owner}}</span>
+                            </p>
                             <p ng-if="addon.keywords !=''&& addon.keywords != null">
                                 Keywords: {{addon.keywords}}
                             </p>
@@ -238,18 +238,21 @@
 									  <span ng-hide="$last">
 									  {{dependency.name}},
 									  </span>
+                                </span>
                                 <span ng-show="$last && addon.dependencies.__ENTITIES.length>1">
 									  and {{dependency.name}}
-									  </span>
+							    </span>
                                 <span ng-show="$last && addon.dependencies.__ENTITIES.length == 1">
 									  {{dependency.name}}
-									  </span>
-                                </span>
+							    </span>
                             </p>
-                            {{mySplit(addon.description,1)}} <span class="author">- by {{addon.owner}}</span>
-
-                        </p>
-
+                            <p ng-if="mySplit(addon.description,1) != 'null'">{{mySplit(addon.description,1)}}</p>
+                        </div>
+                        <div ng-if="addon.minStudioVersion || addon.maxStudioVersion" class="desc-ver">
+                            <p>requires Wakanda 
+                                <span class="minver" ng-if="addon.minStudioVersion">&gt; {{ addon.minStudioVersion }}</span><span ng-if="addon.minStudioVersion && addon.maxStudioVersion"> and </span><span class="maxver" ng-if="addon.maxStudioVersion">&lt;= {{ addon.maxStudioVersion }}</span>
+                            </p>
+                        </div>
                     </div>
 
                     <!-- BUTTONS -->
