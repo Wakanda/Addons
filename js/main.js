@@ -84,110 +84,20 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
             var addonMinVersionArray = addon.minStudioVersion.split('.').map(function(val) {
                 return parseInt(val);
             });
-            isCompatible = compareVersions(addonMinVersionArray, studioVersionArray);
+            isCompatible = utils.compareVersions(addonMinVersionArray, studioVersionArray);
         }
 
         if (isCompatible && addon.maxStudioVersion) {
             var addonMaxVersionArray = addon.maxStudioVersion.split('.').map(function(val) {
                 return parseInt(val);
             });
-            isCompatible = compareVersions(studioVersionArray, addonMaxVersionArray);
+            isCompatible = utils.compareVersions(studioVersionArray, addonMaxVersionArray);
         }
 
         return isCompatible;
     }
-    
-    // compare two versions arrays
-    function compareVersions(shouldBeSmaller, shouldBeHigher) {
-        switch(shouldBeSmaller.length) {
-            case 3:
-                if (shouldBeHigher[0] > shouldBeSmaller[0]) {
-                    return true;
-                } else if (shouldBeHigher[0] == shouldBeSmaller[0]) {
-                    if (shouldBeHigher[1] > shouldBeSmaller[1]) {
-                        return true;
-                    } else if (shouldBeHigher[1] == shouldBeSmaller[1]) {
-                        if (shouldBeHigher[2] >= shouldBeSmaller[2]) {
-                            return true;
-                        }
-                    }
-                }
-                return false;
-                break;
-            case 2:
-                if (shouldBeHigher[0] > shouldBeSmaller[0]) {
-                    return true;
-                } else if (shouldBeHigher[0] == shouldBeSmaller[0]) {
-                    if (shouldBeHigher[1] >= shouldBeSmaller[1]) {
-                        return true;
-                    }
-                }
-                return false;
-                break;
-            case 1:
-                if (shouldBeHigher[0] >= shouldBeSmaller[0]) {
-                    return true;
-                }
-                return false;
-                break;
-            default:
-                return true;
-                break;
-        }
-        return true;
-    }
 
-    // retro-compatibility with WAK < 1.1.0
-    function getStudioVersionObject (studioVersion, buildNumber) {
-        var studioVersionObject = {};
-
-        if (typeof studioVersion === 'string') {
-            // old isEnterprise call
-            if (studio.isEnterprise) {
-                studioVersionObject.isEnterprise = true;
-            } else {
-                studioVersionObject.isEnterprise = false;
-            }
-
-            // old dev versions
-            if (studioVersion == "Dev" || studioVersion == "0.0.0.0") {
-                studioVersionObject.isDev = true;
-            } else {
-                studioVersionObject.isDev = false;
-            }
-
-            var studioVersionStringArray = [];
-            if (buildNumber.length > 0) {
-                studioVersionStringArray = buildNumber.split('.');
-            } else {
-                var studioVersionSplit = studioVersion.split(' ');
-                studioVersionStringArray = studioVersionSplit[2].split('.');
-            }
-
-            // all WAK < 1.1.0 are labeled with old Wakanda versioning. From 1 to 11, converted logically in 0.1 to 0.11
-            studioVersionObject.major = 0;
-            // 0.0.0.0 are dev version, they are converted to 0.11
-            if (studioVersionObject == "0.0.0.0") {
-                studioVersionObject.minor = 11;
-                studioVersionObject.patch = 0;
-            } else {
-                studioVersionObject.minor = studioVersionStringArray[0];
-                studioVersionObject.patch = studioVersionStringArray[1];
-            }
-
-            studioVersionObject.full = [
-                studioVersionObject.major,
-                studioVersionObject.minor,
-                studioVersionObject.patch
-            ].join('.');
-
-        } else if (typeof studioVersion === 'object') {
-            studioVersionObject = studioVersion;
-        }
-
-        return studioVersionObject;
-    }
-    $scope.solutionInfos.studio.version = getStudioVersionObject($scope.solutionInfos.studio.version, studio.buildNumber);
+    $scope.solutionInfos.studio.version = utils.getStudioVersionObject($scope.solutionInfos.studio.version, studio.buildNumber);
     $scope.branch = "master";
     if ($scope.solutionInfos.studio.version.major < 1) {
         $scope.branch = "WAK" + $scope.solutionInfos.studio.version.minor;
@@ -376,7 +286,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
                 }
 
 
-                $scope.somethingToUpdate = findItem($scope.addons, 'status', 'Upgrade') != -1;
+                $scope.somethingToUpdate = utils.findItem($scope.addons, 'status', 'Upgrade') != -1;
                 changeAddonsHash();
                 checkAddonsStatus();
 
@@ -396,7 +306,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 
                 }
 
-                $scope.somethingToUpdate = findItem($scope.addons, 'status', 'Upgrade') != -1;
+                $scope.somethingToUpdate = utils.findItem($scope.addons, 'status', 'Upgrade') != -1;
                 changeAddonsHash();
                 checkAddonsStatus();
 
@@ -518,14 +428,6 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
         });
     }
 
-    function findItem(arr, key, value) {
-        for (var i = 0; i < arr.length; i++) {
-            if (arr[i][key] === value && arr[i].isCompatible) {
-                return (i);
-            }
-        }
-        return -1;
-    }
     // ------------------------------------------------------------------------
     // > BUTTONS ACTIONS
     // ------------------------------------------------------------------------
@@ -568,7 +470,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
             var newaddon;
             if (newdependencies.length > 0) {
 
-                newaddon = $scope.addons[findItem($scope.addons, "name", newdependencies.splice(0, 1)[0].name)];
+                newaddon = $scope.addons[utils.findItem($scope.addons, "name", newdependencies.splice(0, 1)[0].name)];
                 newdependencies = newdependencies.concat(newaddon.dependencies.__ENTITIES);
                 switch (newaddon.status) {
                 case 'Install':
@@ -636,7 +538,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
             var newaddon;
             if (newdependencies.length > 0) {
 
-                newaddon = $scope.addons[findItem($scope.addons, "name", newdependencies.splice(0, 1)[0].name)];
+                newaddon = $scope.addons[utils.findItem($scope.addons, "name", newdependencies.splice(0, 1)[0].name)];
                 newdependencies = newdependencies.concat(newaddon.dependencies.__ENTITIES);
 
                 if (!newaddon.isCompatible) {
@@ -679,7 +581,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
                 $scope.$apply();
             }
 
-            if (findItem($scope.addons, 'status', 'Upgrade') == -1) {
+            if (utils.findItem($scope.addons, 'status', 'Upgrade') == -1) {
 
                 studio.setCommandWarning("Addons.showDialog", false);
             }
@@ -689,7 +591,7 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
 
     $scope.upgradeAll = function () {
 
-        var nextUpdate = findItem($scope.addons, 'status', 'Upgrade');
+        var nextUpdate = utils.findItem($scope.addons, 'status', 'Upgrade');
         $scope.somethingToUpdate = nextUpdate != -1;
         var allUpdate = [];
 
@@ -699,15 +601,15 @@ addonsApp.controller('addonsCtrl', function ($scope, AddonsRest, $filter) {
                 "name": $scope.addons[nextUpdate].name
             })
             $scope.addons[nextUpdate].status = "spin"
-            nextUpdate = findItem($scope.addons, 'status', 'Upgrade');
+            nextUpdate = utils.findItem($scope.addons, 'status', 'Upgrade');
             $scope.somethingToUpdate = nextUpdate != -1;
         }
-        while (findItem($scope.addons, 'status', 'spin') != -1) {
+        while (utils.findItem($scope.addons, 'status', 'spin') != -1) {
 
 
-            $scope.addons[findItem($scope.addons, 'status', 'spin')].status = "Upgrade";
+            $scope.addons[utils.findItem($scope.addons, 'status', 'spin')].status = "Upgrade";
         }
-        var firstUpdate = $scope.addons[findItem($scope.addons, "name", allUpdate.splice(0, 1)[0].name)];
+        var firstUpdate = $scope.addons[utils.findItem($scope.addons, "name", allUpdate.splice(0, 1)[0].name)];
         $scope.addonUpgrade(firstUpdate, allUpdate);
 
 

@@ -32,140 +32,6 @@ var actions = {};
 
 var DEBUGMODE = false;
 
-
-// retro-compatibility with WAK < 1.1.0
-function getStudioVersionObject (studioVersion, buildNumber) {
-    var studioVersionObject = {};
-
-    if (typeof studioVersion === 'string') {
-        // old isEnterprise call
-        if (studio.isEnterprise) {
-            studioVersionObject.isEnterprise = true;
-        } else {
-            studioVersionObject.isEnterprise = false;
-        }
-
-        // old dev versions
-        if (studioVersion == "Dev" || studioVersion == "0.0.0.0") {
-            studioVersionObject.isDev = true;
-        } else {
-            studioVersionObject.isDev = false;
-        }
-
-        var studioVersionStringArray = [];
-        if (buildNumber.length > 0) {
-            studioVersionStringArray = buildNumber.split('.');
-        } else {
-            var studioVersionSplit = studioVersion.split(' ');
-            studioVersionStringArray = studioVersionSplit[2].split('.');
-        }
-
-        // all WAK < 1.1.0 are labeled with old Wakanda versioning. From 1 to 11, converted logically in 0.1 to 0.11
-        studioVersionObject.major = 0;
-        // 0.0.0.0 are dev version, they are converted to 0.11
-        if (studioVersionObject == "0.0.0.0") {
-            studioVersionObject.minor = 11;
-            studioVersionObject.patch = 0;
-        } else {
-            studioVersionObject.minor = studioVersionStringArray[0];
-            studioVersionObject.patch = studioVersionStringArray[1];
-        }
-
-        studioVersionObject.full = [
-            studioVersionObject.major,
-            studioVersionObject.minor,
-            studioVersionObject.patch
-        ].join('.');
-
-    } else if (typeof studioVersion === 'object') {
-        studioVersionObject = studioVersion;
-    }
-
-    return studioVersionObject;
-}
-
-function compareVersions(shouldBeSmaller, shouldBeHigher) {
-    switch(shouldBeSmaller.length) {
-        case 3:
-            if (shouldBeHigher[0] > shouldBeSmaller[0]) {
-                return true;
-            } else if (shouldBeHigher[0] == shouldBeSmaller[0]) {
-                if (shouldBeHigher[1] > shouldBeSmaller[1]) {
-                    return true;
-                } else if (shouldBeHigher[1] == shouldBeSmaller[1]) {
-                    if (shouldBeHigher[2] >= shouldBeSmaller[2]) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-            break;
-        case 2:
-            if (shouldBeHigher[0] > shouldBeSmaller[0]) {
-                return true;
-            } else if (shouldBeHigher[0] == shouldBeSmaller[0]) {
-                if (shouldBeHigher[1] >= shouldBeSmaller[1]) {
-                    return true;
-                }
-            }
-            return false;
-            break;
-        case 1:
-            if (shouldBeHigher[0] >= shouldBeSmaller[0]) {
-                return true;
-            }
-            return false;
-            break;
-        default:
-            return true;
-            break;
-    }
-    return true;
-}
-
-function validateAddonVersionEligibility(addon, version) {
-    var studioVersionArray = [
-        parseInt(version.major),
-        parseInt(version.minor),
-        parseInt(version.patch)
-    ];
-    var check = true;
-
-    if (addon.minStudioVersion) {
-        var addonMinVersionArray = addon.minStudioVersion.split('.').map(function(val) {
-            return parseInt(val);
-        });
-        check = compareVersions(addonMinVersionArray, studioVersionArray);
-    }
-
-    if (check && addon.maxStudioVersion) {
-        var addonMaxVersionArray = addon.maxStudioVersion.split('.').map(function(val) {
-            return parseInt(val);
-        });
-        check = compareVersions(studioVersionArray, addonMaxVersionArray);
-    }
-
-    return check;
-}
-
-function findItem(arr, key, value) {
-    if (!arr) return -1;
-    for (var i = 0; i < arr.length; i++) {
-        if (arr[i][key] === value) {
-            return (i);
-        }
-    }
-    return -1;
-}
-
-function findShaByBranch(branches, branchName) {
-    var sha = findItem(branches, "branch", branchName);
-    if (sha == -1) {
-        sha = findItem(branches, "branch", "master");
-    }
-    return sha;
-}
-
 /**
 
  *
@@ -999,7 +865,7 @@ actions.checkForUpdate = function checkForUpdate(message) {
 
     if (message.source.data[0].name == "Widgets") {
 
-        var studioVersion = getStudioVersionObject(studio.version, studio.buildNumber);
+        var studioVersion = utils.getStudioVersionObject(studio.version, studio.buildNumber);
         var branch = 'master';
         if (studioVersion.major < 1) {
             branch = "WAK" + studioVersion.major;
@@ -1025,7 +891,7 @@ actions.checkForUpdate = function checkForUpdate(message) {
         for (var i = 0; i < widgets.length; i++) {
 
 
-            indexWidget = findItem(addonsitems, "name", widgets[i].name);
+            indexWidget = utils.findItem(addonsitems, "name", widgets[i].name);
 
 
 
@@ -1050,11 +916,11 @@ actions.checkForUpdate = function checkForUpdate(message) {
 
                 eligibleForUpdate = true;
                 // check commit sha differs, otherwise no updates
-                sha = findShaByBranch(item.branchs.__ENTITIES, branch);
+                sha = utils.findShaByBranch(item.branchs.__ENTITIES, branch);
                 if (item.branchs.__ENTITIES[sha].sha === parsed.hash) {
                     eligibleForUpdate = false;
                 } else {
-                    eligibleForUpdate = validateAddonVersionEligibility(item, studioVersion);
+                    eligibleForUpdate = utils.validateAddonVersionEligibility(item, studioVersion);
                 }
 
                 if (eligibleForUpdate) {
@@ -1094,7 +960,7 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate() {
         var numberOfUpdate = 0;
 
         // branch selection
-        var studioVersion = getStudioVersionObject(studio.version, studio.buildNumber);
+        var studioVersion = utils.getStudioVersionObject(studio.version, studio.buildNumber);
         var branch = 'master';
         if (studioVersion.major < 1) {
             branch = "WAK" + studioVersion.major;
@@ -1126,9 +992,10 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate() {
 
         var alreadyGlobal, indexExtension, parsed, item, jsonFile, sha, eligibleForUpdate;
 
+        // user extensions
         for (var i = 0; i < globalExtensions.length; i++) {
 
-            indexExtension = findItem(addonsitems, "name", globalExtensions[i].name);
+            indexExtension = utils.findItem(addonsitems, "name", globalExtensions[i].name);
 
             if (indexExtension != -1) {
 
@@ -1150,11 +1017,12 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate() {
 
                 eligibleForUpdate = true;
                 // check commit sha differs, otherwise no updates
-                sha = findShaByBranch(item.branchs.__ENTITIES, branch);
+                sha = utils.findShaByBranch(item.branchs.__ENTITIES, branch);
+
                 if (item.branchs.__ENTITIES[sha].sha === parsed.hash) {
                     eligibleForUpdate = false;
                 } else {
-                    eligibleForUpdate = validateAddonVersionEligibility(item, studioVersion);
+                    eligibleForUpdate = utils.validateAddonVersionEligibility(item, studioVersion);
                 }
 
                 if (eligibleForUpdate) {
@@ -1165,14 +1033,12 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate() {
 
         }
 
-
-
+        // internal extensions
         for (i = 0; i < localExtensions.length; i++) {
 
+            indexExtension = utils.findItem(addonsitems, "name", localExtensions[i].name);
 
-            indexExtension = findItem(addonsitems, "name", localExtensions[i].name);
-
-            alreadyGlobal = findItem(globalExtensions, "name", localExtensions[i].name);
+            alreadyGlobal = utils.findItem(globalExtensions, "name", localExtensions[i].name);
 
             if (indexExtension != -1 && alreadyGlobal == -1 && addonsitems[indexExtension].type == "wakanda-internal-extensions") {
 
@@ -1194,11 +1060,11 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate() {
 
                 eligibleForUpdate = true;
                 // check commit sha differs, otherwise no updates
-                sha = findShaByBranch(item.branchs.__ENTITIES, branch);
+                sha = utils.findShaByBranch(item.branchs.__ENTITIES, branch);
                 if (item.branchs.__ENTITIES[sha].sha == parsed.hash) {
                     eligibleForUpdate = false;
                 } else {
-                    eligibleForUpdate = validateAddonVersionEligibility(item, studioVersion);
+                    eligibleForUpdate = utils.validateAddonVersionEligibility(item, studioVersion);
                 }
 
                 if (eligibleForUpdate) {
