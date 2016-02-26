@@ -2927,3 +2927,13 @@ input[type="search"] {
     border-left: 0.5rem solid transparent;
     border-right: 0.5rem solid transparent
 }
+
+.studio-ext-addons-infos .desc {
+    clear: both;
+}
+
+.studio-ext-addons-infos .desc-ver {
+    overflow: hidden;
+    margin-top: 10px;
+    color: #777;
+}
