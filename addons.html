@@ -271,7 +271,7 @@
                         <button class="button error" data-key="" ng-click="addonRetry()" ng-if="addon.status == 'error'"><i class="fa fa-ban"></i> Error/Retry</button>
 
                         <!-- NEED TO RESTART -->
-                        <button class="button reboot" data-key="" ng-if="addon.status == 'reboot' || addon.status == 'Restart'" disabled><i class="fa fa-cogs"></i> Restart studio</button>
+                        <button class="button reboot" data-key="" onClick="studio.restartStudio()" ng-if="addon.status == 'reboot' || addon.status == 'Restart'"><i class="fa fa-cogs"></i> Restart studio</button>
                         <button class="button spin" ng-if="addon.status == 'spin'"></button>
 
                         <!-- LICENSE BTN -->
