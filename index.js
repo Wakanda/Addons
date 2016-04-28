@@ -1,46 +1,4 @@
-/* Copyright (c) 4D, 2014
-
- *
-
- * Permission is hereby granted, free of charge, to any person obtaining a copy
-
- * of this software and associated documentation files (the "Software"), to deal
-
- * in the Software without restriction, including without limitation the rights
-
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-
- * copies of the Software, and to permit persons to whom the Software is
-
- * furnished to do so, subject to the following conditions:
-
- *
-
- * The above copyright notice and this permission notice shall be included in
-
- * all copies or substantial portions of the Software.
-
- *
-
- * The Software shall be used for Good, not Evil.
-
- *
-
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-
- * THE SOFTWARE.
-
- */
+var utils = require("./js/utils").utils;
 /**
 
  *
@@ -58,7 +16,7 @@ var WAM_BASE = 'http://addons.wakanda.org/';
 
  */
 
-actions = {};
+var actions = {};
 
 /**
 
@@ -325,7 +283,6 @@ function getAddonsRootFolder(addonType) {
 
     }
 
-    // studio.alert(rootAddonsFolder.path);
     return rootAddonsFolder;
 
 }
@@ -576,7 +533,7 @@ function loadAddon(addonParams) {
 
                     if (addonParams.type.indexOf('extension') != -1) {
 
-                        isUpgrade = studio.extension.storage.getItem(addonParams.name) == "Upgrade";
+                        var isUpgrade = studio.extension.storage.getItem(addonParams.name) == "Upgrade";
                         studio.extension.storage.setItem(addonParams.name, 'Restart');
                         if (isUpgrade) {
 
@@ -719,6 +676,7 @@ actions.backup = function backup() {
  */
 
 actions.check = function check() {
+    var rootAddonsFolder = '';
 
     var pluginName = getAddonParam('name');
 
@@ -729,11 +687,9 @@ actions.check = function check() {
     var fisrtCheck = studio.extension.storage.getItem('fisrtCheck');
 
     if (pluginType == "wakanda-internal-extensions" && fisrtCheck) {
-
-        var rootAddonsFolder = getAddonsRootFolder("wakanda-extensions");
+        rootAddonsFolder = getAddonsRootFolder("wakanda-extensions");
     } else {
-
-        var rootAddonsFolder = getAddonsRootFolder(pluginType);
+        rootAddonsFolder = getAddonsRootFolder(pluginType);
     }
 
     if (!Folder(rootAddonsFolder.path + pluginName).exists) {
@@ -754,9 +710,10 @@ actions.check = function check() {
 
         var jsonFile = File(rootAddonsFolder.path + pluginName + '/package.json');
 
+        var parsed = {};
+
         try {
 
-            var parsed;
 
             parsed = (jsonFile.exists) ? JSON.parse(jsonFile) : {};
 
@@ -806,7 +763,7 @@ actions.downloadExt = function downloadExt(message) {
 
 
     if (typeof message !== 'undefined' && typeof message.params !== 'undefined') {
-        studio.extension.storage.setItem('addonParams', JSON.stringify(message.params))
+        studio.extension.storage.setItem('addonParams', JSON.stringify(message.params));
         if (typeof message.params.projectpath !== 'undefined') {
             studio.extension.storage.setItem('projectpath', message.params.projectpath);
         }
@@ -814,9 +771,9 @@ actions.downloadExt = function downloadExt(message) {
 
     var addonParams = JSON.parse(unescape(studio.extension.storage.getItem('addonParams')));
 
-    var pluginName = getAddonParam('name');
+    // var pluginName = getAddonParam('name');
 
-    var pluginType = getAddonParam('type');
+    // var pluginType = getAddonParam('type');
 
 
     return loadAddon(addonParams);
@@ -824,8 +781,6 @@ actions.downloadExt = function downloadExt(message) {
 };
 
 exports.handleMessage = function handleMessage(message) {
-
-    'use strict';
 
     var actionName;
 
@@ -857,9 +812,6 @@ exports.handleMessage = function handleMessage(message) {
 
 actions.showDialog = function showDialog() {
 
-    'use strict';
-
-
     studio.extension.storage.setItem("reload", "NOK");
 
     studio.extension.storage.setItem('defaultTab', 'wakanda-extensions');
@@ -881,8 +833,6 @@ actions.showDialog = function showDialog() {
 };
 
 actions.showThemesDialog = function showThemesDialog() {
-
-    'use strict';
 
     studio.extension.storage.setItem('defaultTab', 'wakanda-themes');
 
@@ -906,22 +856,26 @@ actions.alert = function alert() {
     studio.extension.storage.setItem('alertMessage', '');
 
 };
-actions.reloadTab = function reloadTab(message) {
+actions.reloadTab = function reloadTab() {
 
     studio.extension.storage.setItem("reload", "OK");
 
-}
+};
 actions.checkForUpdate = function checkForUpdate(message) {
 
     if (message.source.data[0].name == "Widgets") {
 
-        var branch = (studio.version.split(' ')[0] == "Dev" || studio.version.split(' ')[0] == "0.0.0.0") ? "master" : "WAK" + studio.version.split(' ')[0];
+        var studioVersion = utils.getStudioVersionObject(studio.version, studio.buildNumber);
+        var branch = 'master';
+        if (studioVersion.major < 1) {
+            branch = "WAK" + studioVersion.major;
+        }
 
         var widgets = message.source.data[0].folders;
 
         var rootAddonsFolder = getAddonsRootFolder('wakanda-widgets');
 
-        var query = WAM_BASE + 'rest/Addons/name,branchs?$filter="visible=true"&$top=1000&$expand=branchs';
+        var query = WAM_BASE + 'rest/Addons/name,branchs,minStudioVersion,maxStudioVersion?$filter="visible=true"&$top=1000&$expand=branchs';
 
         var xmlHttp = new studio.XMLHttpRequest();
 
@@ -931,12 +885,13 @@ actions.checkForUpdate = function checkForUpdate(message) {
 
         var addonsitems = JSON.parse(xmlHttp.response).__ENTITIES;
 
-        var indexWidget, item, jsonFile, sha;
+        var indexWidget, item, jsonFile, sha, eligibleForUpdate;
+        var nbUpdates = 0;
 
         for (var i = 0; i < widgets.length; i++) {
 
 
-            indexWidget = findItem(addonsitems, "name", widgets[i].name);
+            indexWidget = utils.findItem(addonsitems, "name", widgets[i].name);
 
 
 
@@ -946,9 +901,9 @@ actions.checkForUpdate = function checkForUpdate(message) {
 
                 jsonFile = File(rootAddonsFolder.path + item.name + '/package.json');
 
-                try {
+                var parsed = {};
 
-                    var parsed;
+                try {
 
                     parsed = (jsonFile.exists) ? JSON.parse(jsonFile) : {};
 
@@ -957,27 +912,32 @@ actions.checkForUpdate = function checkForUpdate(message) {
                     studio.alert('Add-on ' + item.name + ' has an invalid package.json.');
 
                 }
-                sha = findItem(item.branchs.__ENTITIES, "branch", branch);
 
-                if (sha == -1) sha = findItem(item.branchs.__ENTITIES, "branch", "master");
 
-                if (item.branchs.__ENTITIES[sha].sha != parsed.hash) {
-
-                    studio.setCommandWarning("Addons.showDialog", true);
-
-                    return;
+                eligibleForUpdate = true;
+                // check commit sha differs, otherwise no updates
+                sha = utils.findShaByBranch(item.branchs.__ENTITIES, branch);
+                if (item.branchs.__ENTITIES[sha].sha === parsed.hash) {
+                    eligibleForUpdate = false;
+                } else {
+                    eligibleForUpdate = utils.validateAddonVersionEligibility(item, studioVersion);
                 }
 
+                if (eligibleForUpdate) {
+                    nbUpdates++;
+                }
 
             }
 
         }
 
-        studio.setCommandWarning("Addons.showDialog", false);
+        if ( nbUpdates > 0)
+            studio.setCommandWarning("Addons.showDialog", true, nbUpdates );
+        else
+            studio.setCommandWarning("Addons.showDialog", false);
     }
 
 };
-
 actions.removeAddon = function removeAddon() {
 
     var addonName = getAddonParam('name');
@@ -990,29 +950,23 @@ actions.removeAddon = function removeAddon() {
 
     Folder(rootAddonsFolder.path + addonName).remove();
 
-}
-
-function findItem(arr, key, value) {
-
-    for (var i = 0; i < arr.length; i++) {
-        if (arr[i][key] === value) {
-            return (i);
-        }
-    }
-    return -1;
-}
+};
 
 
-actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
-
-
+actions.checkForExtensionsUpdate = function checkForExtensionsUpdate() {
 
     try {
 
+        var numberOfUpdate = 0;
 
-        var branch = (studio.version.split(' ')[0] == "Dev" || studio.version.split(' ')[0] == "0.0.0.0") ? "master" : "WAK" + studio.version.split(' ')[0];
+        // branch selection
+        var studioVersion = utils.getStudioVersionObject(studio.version, studio.buildNumber);
+        var branch = 'master';
+        if (studioVersion.major < 1) {
+            branch = "WAK" + studioVersion.major;
+        }
 
-        //golobal extensions
+        // global extensions
         var rootAddonsFolder = getAddonsRootFolder('wakanda-extensions');
 
         var globalExtensions = Folder(rootAddonsFolder.path).folders;
@@ -1026,7 +980,7 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
 
         localExtensions.sort(sortFolderListByCreationDate);
 
-        var query = WAM_BASE + 'rest/Addons/name,type,branchs?$filter="type=\'\*extensions\'"&$top=1000&$expand=branchs';
+        var query = WAM_BASE + 'rest/Addons/name,type,branchs,minStudioVersion,maxStudioVersion?$filter="type=\'\*extensions\'"&$top=1000&$expand=branchs';
 
         var xmlHttp = new studio.XMLHttpRequest();
 
@@ -1036,11 +990,12 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
 
         var addonsitems = JSON.parse(xmlHttp.response).__ENTITIES;
 
-        var indexWidget, item, jsonFile, sha;
+        var alreadyGlobal, indexExtension, parsed, item, jsonFile, sha, eligibleForUpdate;
 
+        // user extensions
         for (var i = 0; i < globalExtensions.length; i++) {
 
-            indexExtension = findItem(addonsitems, "name", globalExtensions[i].name);
+            indexExtension = utils.findItem(addonsitems, "name", globalExtensions[i].name);
 
             if (indexExtension != -1) {
 
@@ -1048,10 +1003,9 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
 
                 jsonFile = File(globalExtensions[i].path + 'package.json');
 
+                parsed = {};
 
                 try {
-
-                    var parsed;
 
                     parsed = (jsonFile.exists) ? JSON.parse(jsonFile) : {};
 
@@ -1060,30 +1014,31 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
                     studio.alert('Add-on ' + item.name + ' has an invalid package.json.');
 
                 }
-                sha = findItem(item.branchs.__ENTITIES, "branch", branch);
 
-                if (sha == -1) sha = findItem(item.branchs.__ENTITIES, "branch", "master");
+                eligibleForUpdate = true;
+                // check commit sha differs, otherwise no updates
+                sha = utils.findShaByBranch(item.branchs.__ENTITIES, branch);
 
-                if (item.branchs.__ENTITIES[sha].sha != parsed.hash) {
-
-                    studio.setCommandWarning("Addons.showDialog", true);
-
-                    return;
+                if (item.branchs.__ENTITIES[sha].sha === parsed.hash) {
+                    eligibleForUpdate = false;
+                } else {
+                    eligibleForUpdate = utils.validateAddonVersionEligibility(item, studioVersion);
                 }
 
+                if (eligibleForUpdate) {
+                    numberOfUpdate++;
+                }
 
             }
 
         }
 
+        // internal extensions
+        for (i = 0; i < localExtensions.length; i++) {
 
+            indexExtension = utils.findItem(addonsitems, "name", localExtensions[i].name);
 
-        for (var i = 0; i < localExtensions.length; i++) {
-
-
-            indexExtension = findItem(addonsitems, "name", localExtensions[i].name);
-
-            alreadyGlobal = findItem(globalExtensions, "name", localExtensions[i].name);
+            alreadyGlobal = utils.findItem(globalExtensions, "name", localExtensions[i].name);
 
             if (indexExtension != -1 && alreadyGlobal == -1 && addonsitems[indexExtension].type == "wakanda-internal-extensions") {
 
@@ -1091,9 +1046,9 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
 
                 jsonFile = File(localExtensions[i].path + 'package.json');
 
-                try {
+                parsed = {};
 
-                    var parsed;
+                try {
 
                     parsed = (jsonFile.exists) ? JSON.parse(jsonFile) : {};
 
@@ -1102,15 +1057,18 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
                     studio.alert('Add-on ' + item.name + ' has an invalid package.json.');
 
                 }
-                sha = findItem(item.branchs.__ENTITIES, "branch", branch);
 
-                if (sha == -1) sha = findItem(item.branchs.__ENTITIES, "branch", "master");
+                eligibleForUpdate = true;
+                // check commit sha differs, otherwise no updates
+                sha = utils.findShaByBranch(item.branchs.__ENTITIES, branch);
+                if (item.branchs.__ENTITIES[sha].sha == parsed.hash) {
+                    eligibleForUpdate = false;
+                } else {
+                    eligibleForUpdate = utils.validateAddonVersionEligibility(item, studioVersion);
+                }
 
-                if (item.branchs.__ENTITIES[sha].sha != parsed.hash) {
-
-                    studio.setCommandWarning("Addons.showDialog", true);
-
-                    return;
+                if (eligibleForUpdate) {
+                    numberOfUpdate++;
                 }
 
 
@@ -1118,10 +1076,15 @@ actions.checkForExtensionsUpdate = function checkForExtensionsUpdate(message) {
 
         }
 
-        studio.setCommandWarning("Addons.showDialog", false);
+        if (numberOfUpdate == 0) {
+            studio.setCommandWarning("Addons.showDialog", false);
+        } else {
+            studio.showMessageOnStatusBar(numberOfUpdate + " updates ready to install", "error");
+            studio.setCommandWarning("Addons.showDialog", true, numberOfUpdate);
+        }
     } catch (e) {
-
-    };
+        studio.alert(e)
+    }
 
 
 };
