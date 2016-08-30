@@ -1,0 +1,23 @@
+{
+  "name": "jquery.confirm",
+  "main": "jquery.confirm.js",
+  "version": "1.0.0",
+  "homepage": "https://github.com/mikkotikkanen/jquery.confirm",
+  "authors": [
+    "Mikko Tikkanen <mikko.tikkanen@gmail.com>"
+  ],
+  "description": "jQuery plugin for simple comfirmations",
+  "keywords": [
+    "jquery",
+    "plugin",
+    "confirm"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

@@ -1,12 +1,13 @@
 {
     "extension": {
-        "name": "Add-ons",
-        "version": "0.3.0",
-        "description": "Download Wakanda Add-ons",
+        "name": "Addons",
+        "version": "1.1.0",
+        "minStudioVersion": "1.1.0",
+        "description": "Wakanda Studio Addons extension",
         "icon": "icon.png",
         "actions": [{
             "name": "showDialog",
-            "title": "Add-ons"
+            "title": "Addons"
         }, {
             "name": "reloadTab",
             "title": "reload Tab",
@@ -14,8 +15,20 @@
                 "event": "onSolutionOpened"
             }]
         }, {
-            "name": "checkForExtensionsUpdate",
-            "title": "check For Extensions Update",
+            "name": "checkUpdates",
+            "title": "check updates",
+            "trigger": [{
+                "event": "onSolutionOpened"
+            }]
+        }, {
+            "name": "checkUpdates",
+            "title": "check updates",
+            "trigger": [{
+                "event": "onSolutionClosed"
+            }]
+        }, {
+            "name": "init",
+            "title": "init extension",
             "trigger": [{
                 "event": "onStudioStart"
             }]

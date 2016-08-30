@@ -1,0 +1,30 @@
+{
+  "name": "Addons",
+  "author": "Wakanda SAS",
+  "description": "Wakanda Studio Addons extension",
+  "main": "app.js",
+  "moduleType": [],
+  "keywords": [
+    "Wakanda",
+    "Addons"
+  ],
+  "license": "MIT",
+  "homepage": "http://www.wakanda.org",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-resource": "~1.5.0",
+    "font-awesome": "~4.5.0",
+    "angular": "~1.5.0",
+    "angularUtils-pagination": "angular-utils-pagination#~0.11.0",
+    "jquery": "~2.2.1",
+    "jquery.confirm": "*",
+    "PACE": "pace#~1.0.2",
+    "es5-shim": "~4.5.7"
+  }
+}

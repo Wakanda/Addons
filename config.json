@@ -1,0 +1,5 @@
+{
+  "protocol": "http",
+  "domain": "addons.wakanda.org",
+  "url": "/rest/Addons/"
+}

@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+	<title>jquery.confirm Example page</title>
+</head>
+<body>
+<h1>jquery.confirm</h1>
+<button id="btn1">Confirm #1 (Default message)</button>
+<button id="btn2" data-confirm="Button #2 - Are you sure?">Confirm #2 (Custom message)</button>
+<button id="btn3">Confirm #3 (Javascript triggered custom message)</button>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script src="../jquery.confirm.js"></script>
+<script>
+	$('#btn1').confirm(function() {
+		alert('Button #1, confirmed!');
+	});
+    $(document).on('confirm', '#btn2', function() {
+        alert('Button #2, confirmed!');
+    });
+	$('#btn3').click(function() {
+		$.confirm('Button #3 - Are you really sure?', function() {
+			alert('Button #3, confirmed!');
+		});
+	});
+</script>
+</body>
+</html>

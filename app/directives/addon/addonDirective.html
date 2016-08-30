@@ -1,0 +1,91 @@
+<div data-id="{{addon.ID}}" class="addon-container" ng-class="{'error' : addon.error, 'warning' : addon.warning, 'uncompatible': !addon.isCompatible}">
+  <!-- ADDON INFO -->
+  <section class="studio-ext-addons-info">
+    <!-- NAME & DATE -->
+    <div class="addons-info-header">
+      <img width="18" height="18" class="addon-icon wakanda-badge" src="./app/assets/img/wakanda.png" title="wakanda internal extension" ng-if="addon.type == 'wakanda-internal-extensions'"/>
+      <img width="18" height="18" class="addon-icon" ng-src="{{ addon.icon_uri ? addon.icon_uri : './app/assets/img/'+type+'.png' }}" ng-if="addon.type != 'wakanda-internal-extensions'"/>
+      <h2 class="addon-title">{{addon.title}}</h2>
+      <!-- NB OF DOWNLOAD -->
+      <div class="downloadnumber">
+        {{addon.downloads}}  <i class="fa fa-cloud-download"></i>
+      </div>
+      <div class="clear"></div>
+      <div class="version" ng-if="addon.version!=''&& addon.version != null">version: {{addon.version}} <span ng-if="addon.status !== 'Install' && localAddon.version">(installed {{ localAddon.version }})</span> - </div>
+      <div class="date">last update: {{addon.updated_at | date: 'yyyy-MM-dd'}}</div>
+    </div>
+    <!-- DESCRIPTION & AUTHOR -->
+    <div class="desc">
+      <div class="description">
+        <span ng-if="splitStrings(addon.description,0) != '' && splitStrings(addon.description,0) != 'null' && splitStrings(addon.description,0) != 'undefined'">{{splitStrings(addon.description,0)}}</span><span ng-if="splitStrings(addon.description,0) != '' && addon.owner != null"> - </span><span ng-if="addon.owner" class="author">by {{addon.owner}}</span>
+      </div>
+      <div class="small" ng-if="addon.keywords !='' && addon.keywords != null">
+        Keywords: {{addon.keywords}}
+      </div>
+      <div class="small" ng-if="addon.dependencies.__ENTITIES.length>0">
+        Dependencies:
+        <div class="inline" ng-repeat="dependency in addon.dependencies.__ENTITIES">
+            {{getDependencyName(dependency.name)}}<span ng-hide="$last">, </span>
+        </div>
+      </div>
+      <p class="small" ng-if="splitStrings(addon.description,1) != '' && splitStrings(addon.description,1) != 'null'">{{splitStrings(addon.description,1)}}</p>
+    </div>
+    <div class="small" ng-if="addon.minStudioVersion || addon.maxStudioVersion" class="desc-ver">
+      <p>- Requires Wakanda
+        <span class="minver" ng-if="addon.minStudioVersion">&gt;= {{ addon.minStudioVersion }}</span><span ng-if="addon.minStudioVersion && addon.maxStudioVersion"> and </span><span class="maxver" ng-if="addon.maxStudioVersion">&lt;= {{ addon.maxStudioVersion }}</span>
+      </p>
+    </div>        
+    <div ng-if="addon.error" class="error-message">
+      {{addon.error}}
+    </div>
+    <div ng-if="addon.warning" class="warning-message">
+      {{addon.warning}}
+    </div>
+  </section>
+  <!-- CONTROLS -->
+  <section class="options">
+    <!-- INSTALL BTN -->
+    <button class="button install" data-key="" ng-click="install()" ng-if="addon.status == null || addon.status == 'Install'">
+      <i class="fa fa-download"></i> Install
+    </button>
+    <!-- INSTALLED -->
+    <button class="button success" data-key="" ng-if="addon.status == 'Installed'" disabled>
+      <i class="fa fa-check"></i> Installed
+    </button>
+    <!-- UPDATE BTN -->
+    <button class="button update" data-key="" ng-click="update()" ng-if="addon.status == 'Upgrade'">
+      <i class="fa fa-refresh"></i> Upgrade
+    </button>
+    <!-- ERROR/RETRY BTN -->
+    <button class="button error" data-key="" ng-click="retry()" ng-if="addon.status == 'error'">
+      <i class="fa fa-ban"></i> Error/Retry
+    </button>
+    <!-- LICENSE BTN -->
+    <button class="button license" data-key="" ng-if="addon.license" ng-click="openUrlInBrowser(addon.license_url)">
+      <i class="fa fa-copyright"></i>
+      <div class="tooltip">{{addon.license}}</div>
+    </button>
+    <!-- GITHUB BTN -->
+    <button class="button github info" data-key="" ng-click="openUrlInBrowser(addon.github_url)">
+      <i class="fa fa-github"></i>
+      <div class="tooltip">Github</div>
+    </button>
+    <!-- GITHUB ISSUES BTN -->
+    <button class="button bug" ng-click="openUrlInBrowser(addon.github_issues_url)">
+      <i class="fa fa-bug"></i>
+      <div class="tooltip">Issues</div>
+    </button>
+    <!-- Move To Trash BTN -->
+    <button class="button remove" ng-if="addon.status == 'Installed' || addon.status == 'Upgrade' || !addon.status" ng-click="remove()">
+      <i class="fa fa-trash"></i>
+      <div class="tooltip">Remove</div>
+    </button>
+  </section>
+  <!-- OVERLAYS -->
+  <div class="overlay loading-overlay" ng-if="addon.spin && !addon.restart">
+    <div class="pace-activity"></div>
+  </div>
+  <div class="overlay restart-overlay" ng-if="addon.restart">
+    <div onClick="studio.restartStudio()" class="restart-studio"><i class="fa fa-cogs"></i> Restart studio</div>
+  </div>
+</div>

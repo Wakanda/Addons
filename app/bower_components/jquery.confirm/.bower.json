@@ -1,0 +1,32 @@
+{
+  "name": "jquery.confirm",
+  "main": "jquery.confirm.js",
+  "homepage": "https://github.com/mikkotikkanen/jquery.confirm",
+  "authors": [
+    "Mikko Tikkanen <mikko.tikkanen@gmail.com>"
+  ],
+  "description": "jQuery plugin for simple comfirmations",
+  "keywords": [
+    "jquery",
+    "plugin",
+    "confirm"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "_release": "8a2880dacf",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "8a2880dacf63b46ac5b644a0e79df20ee55ec687"
+  },
+  "_source": "git://github.com/mikkotikkanen/jquery.confirm.git",
+  "_target": "*",
+  "_originalSource": "jquery.confirm",
+  "_direct": true
+}

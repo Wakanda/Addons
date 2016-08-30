@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Wakanda Studion Addons</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <link href="./app/assets/css/styles.css" rel="stylesheet">
+    <link href="./app/assets/css/freeow.css" rel="stylesheet">
+    <link href="./app/assets/css/jquery.confirm.css" rel="stylesheet">
+    <link href="./app/assets/css/pace-theme-custom.css" rel='stylesheet'>
+  </head>
+  <body class="studio-ext-addons" ng-app="addonsApp" ng-controller="addonsCtrl">
+    <header class="studio-ext-addons-header">
+      <div id="freeow" class="freeow freeow-top-right"></div>
+      <h1 class="studio-ext-addons-title"><img src="./app/assets/img/logo-addon.png" alt=""> Wakanda <span ng-if="solutionInfos.studio.isEnterprise">Enterprise </span>Studio Add-ons</h1>
+      <!-- BRANCH SELECTION -->
+      <!--<div class="studio-branch">
+              <label for="">Branch</label>
+              <select name="" id="" ng-model="addonsManager.branch">
+                  <option value="WAK9">Wakanda 9</option>
+                  <option value="WAK10">Wakanda 10</option>
+                  <option value="master">Wakanda Main</option>
+              </select>
+              <i class="fa fa-caret-down"></i>
+      </div> -->
+      <!-- TAB NAVIGATION -->
+      <nav class="studio-ext-addons-nav">
+        <ul class="wakRepo">
+          <li id="wakanda-extensions" ng-class="{selected: tabNav == 'wakanda-extensions'}">
+            <a ng-click="tabNav = 'wakanda-extensions'"><img src="./app/assets/img/extensions.png" /> Extensions 
+              <span class="addons-count" ng-if="(getCategoryAddonsCount('wakanda-extensions')+getCategoryAddonsCount('wakanda-internal-extensions')) > 0">({{ (getCategoryAddonsCount('wakanda-extensions')+getCategoryAddonsCount('wakanda-internal-extensions')) }})</span>
+            </a>
+          </li>
+          <li id="wakanda-modules" ng-class="{selected: tabNav == 'wakanda-modules'}" ng-show="solutionInfos.solution.projects.length > 0">
+            <a ng-click="tabNav = 'wakanda-modules'"><img src="./app/assets/img/modules.png" /> Modules 
+              <span class="addons-count" ng-if="getCategoryAddonsCount('wakanda-modules') > 0">({{ getCategoryAddonsCount('wakanda-modules') }})</span>
+            </a>
+          </li>
+          <li id="wakanda-widgets" ng-class="{selected: tabNav == 'wakanda-widgets'}" ng-show="solutionInfos.solution.projects.length > 0">
+            <a ng-click="tabNav = 'wakanda-widgets'"><img src="./app/assets/img/widgets.png" /> Widgets 
+              <span class="addons-count" ng-if="getCategoryAddonsCount('wakanda-widgets') > 0">({{ getCategoryAddonsCount('wakanda-widgets') }})</span>
+            </a>
+          </li>
+          <li id="wakanda-themes" ng-class="{selected: tabNav == 'wakanda-themes'}" ng-show="solutionInfos.solution.projects.length > 0">
+            <a ng-click="tabNav = 'wakanda-themes'"><img src="./app/assets/img/themes.png" /> Themes 
+              <span class="addons-count" ng-if="getCategoryAddonsCount('wakanda-themes') > 0">({{ getCategoryAddonsCount('wakanda-themes') }})</span>
+            </a>
+          </li>
+          <!--  <li id="wakandadb-drivers"><a href="#">Drivers</a></li> -->
+        </ul>
+      </nav>
+      <ul class="studio-project">
+        <!-- ADD FROM AN EXTERNAL REPO -->
+        <li>
+          <a ng-if="loaded" ng-click="addCustomRepo();">
+            <i class="fa fa-plus-square {{tabNavName}}"></i> Import a repository via a URL
+          </a>
+        </li>
+        <!-- PROJECTS LIST DROPDOWN -->
+        <li ng-show="solutionInfos.solution.projects.length > 0 && tabNav != 'wakanda-extensions'">
+          <label for="projectsList"><i class="fa fa-folder {{tabNavName}}"></i> Location</label>
+          <select id="projectsList" ng-model="currentProject" ng-change="changeCurrentProject(currentProject)">
+            <option value="{{project.path}}" ng-repeat="project in projectsList" ng-disabled="project.disable">{{project.nameNoExt}}</option>
+          </select>
+          <i class="fa fa-caret-down"></i>
+        </li>
+        <!-- SHOW ONLY INTERNALS  -->
+        <li>
+          <div class="checkbox" ng-if="loaded" ng-show="tabNav == 'wakanda-extensions'">
+          <label>
+            <input type="checkbox" ng-model="onlyInternal.value"> show only internal extensions </label>
+          </div>
+        </li>
+        <!-- UPDATE ALL BTN -->
+        <li>
+          <button class="button update pull-right" ng-if="loaded && updates" ng-click="addonsManager.updateAll()"><i class="fa fa-refresh"></i> Update all {{tabNavName}} ({{updates}})</button>
+        </li>
+        <!-- RELOAD A TAB  -->
+        <!-- <li>
+          <div class="checkbox" ng-model="loaded" ng-init="loaded = false;">
+            <a ng-click="reloadTab();" ng-if="loaded">
+              Refresh list
+              <i class="fa fa-refresh {{tabNavName}}"></i>
+            </a>
+          </div>
+        </li> -->
+      </ul>
+      <!-- FILTERS -->
+      <ul class="studio-ext-addons-filters">
+        <!-- PAGINATION -->
+        <li>
+          <dir-pagination-controls max-size="5"></dir-pagination-controls>
+        </li>
+        <!-- SORTING -->
+        <li class="filters-sort">
+          <label for="sort">Sort by
+            <select name="sort" id="sort" ng-model="sortFilter">
+              <option value="name">Name</option>
+              <option value="updated_at">Date</option>
+              <option value="downloads">Downloads</option>
+              <option value="owner">Developer</option>
+              <option value="status == 'Installed'">Installed</option>
+              <option value="status == 'Restart' || status == 'Upgrade'">To Upgrade</option>
+              <option value="status == 'Restart' || status == 'Install'">To Install</option>
+              <!--<option value="stars">Stars</option>-->
+            </select>
+            <i class="fa fa-caret-down"></i>
+          </label>
+          <span ng-show="sortFilter == 'updated_at' || sortFilter == 'downloads' || sortFilter == 'owner' || sortFilter == 'name'">
+            <a class="sort-order-btn" ng-click="sortOrder = !sortOrder" ng-hide="sortOrder">
+              Asc <i class="fa fa-caret-up"></i>
+            </a>
+            <a class="sort-order-btn" ng-click="sortOrder = !sortOrder" ng-show="sortOrder">
+              Desc <i class="fa fa-caret-down"></i>
+            </a>
+          </span>
+        </li>
+        <!-- SEARCH INPUT -->
+        <li class="filters-search">
+          <form class="search-form">
+            <span class="as-searchInput">
+              <i class="fa fa-search"></i>
+              <input id="searchField" type="search" placeholder="Search" ng-model="searchTerm" />
+            </span>
+          </form>
+        </li>
+      </ul>
+    </header>
+    <main id="body" class="studio-ext-addons-content">
+      <!-- ADDONS LIST -->
+      <ul class="studio-ext-addons-results-list" id="contentList" ng-if="!error">
+        <!-- ADDON ITEM -->
+        <div>{{addons.length}}</div>
+        <li dir-paginate="addon in addonsManager.addons | filter: addonContainsSearchTerm | filter: {visible : true} | orderBy: sortFilter:sortOrder | itemsPerPage: 7">
+          <addon addon="addon" type="{{tabNavName}}"></addon>
+        </li>
+      </ul>
+      <div ng-if="error" style="position: relative;top: 50px;">
+        The Add-ons server cannot be reached. You may <button ng-click="addCustomRepo();" class="button ">add your library manually</button> or try again later
+      </div>
+    </div>
+    </main>
+    <script src="./utils.js"></script>
+    <script src="./app/bower_components/es5-shim/es5-shim.min.js"></script>
+    <script src="./app/bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="./app/assets/js/jquery.freeow.min.js"></script>
+    <script src="./app/assets/js/xml2json.js"></script>
+    <script src="./app/bower_components/jquery.confirm/jquery.confirm.js"></script>
+    <script src="./app/bower_components/PACE/pace.min.js"></script>
+    <script src="./app/bower_components/angular/angular.min.js"></script>
+    <script src="./app/bower_components/angular-resource/angular-resource.min.js"></script>
+    <script src="./app/bower_components/angularUtils-pagination/dirPagination.js"></script>
+    <script src="./app/app.js"></script>
+    <script src="./app/services/restService.js"></script>
+    <script src="./app/services/addonService.js"></script>
+    <script src="./app/controllers/mainController.js"></script>
+    <script src="./app/directives/addon/addonDirective.js"></script>
+    <script>
+      window.setInterval(function () {
+        if (studio.extension.storage.getItem("reload") == "OK") {
+        document.location.reload();
+        studio.extension.storage.setItem("reload", "NOK")
+        }
+      }, 1000);
+    </script>
+  </body>
+</html>
